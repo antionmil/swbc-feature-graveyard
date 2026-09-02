@@ -116,3 +116,38 @@ body { font-family: var(--font-body); }
 .yard-drift { animation: yard-drift 26s ease-in-out infinite }
 .yard-fog   { animation: yard-fog 34s ease-in-out infinite alternate }
 @media (prefers-reduced-motion: reduce) { .yard-drift, .yard-fog { animation: none } }
+
+/* Zombies. Very slow, very faint, and behind the fog — the point is that you
+   notice one on the second look, not the first. */
+@keyframes yard-walk  { from { transform: translateX(-40px) } to { transform: translateX(540px) } }
+@keyframes yard-bob   { 0%,100% { transform: translateY(0) rotate(-2deg) } 50% { transform: translateY(-1px) rotate(2deg) } }
+@keyframes yard-leg-a { 0%,100% { transform: rotate(12deg) } 50% { transform: rotate(-12deg) } }
+@keyframes yard-leg-b { 0%,100% { transform: rotate(-14deg) } 50% { transform: rotate(10deg) } }
+.yard-walk  { animation-name: yard-walk; animation-timing-function: linear; animation-iteration-count: infinite }
+.yard-bob   { animation: yard-bob 1.9s ease-in-out infinite; transform-origin: 0 -8px }
+.yard-leg-a { animation: yard-leg-a 1.9s ease-in-out infinite; transform-origin: -1px -7px }
+.yard-leg-b { animation: yard-leg-b 2.3s ease-in-out infinite; transform-origin: 1px -7px }
+
+/* The title climbs out of the ground, one letter at a time. Runs once. */
+@keyframes rise-letter {
+  from { transform: translateY(0.9em) rotate(-6deg); opacity: 0 }
+  to   { transform: none; opacity: 1 }
+}
+.dig-title { display: inline-block; overflow: hidden; padding-bottom: .06em }
+.dig-title span { display: inline-block; opacity: 0; animation: rise-letter .62s cubic-bezier(.2,1.15,.35,1) forwards }
+
+/* The button carries a shovel that tips when you reach for it. */
+.dig-btn svg { transition: transform .35s cubic-bezier(.2,1.3,.4,1) }
+.dig-btn:hover svg, .dig-btn:focus-visible svg { transform: rotate(-32deg) translateY(-1px) }
+
+@media (prefers-reduced-motion: reduce) {
+  .yard-walk, .yard-bob, .yard-leg-a, .yard-leg-b { animation: none }
+  .yard-walk { display: none }
+  .dig-title span { opacity: 1; animation: none }
+  .dig-btn svg { transition: none }
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DigTitle } from "@/components/DigTitle";
 import { LiveCount } from "@/components/LiveCount";
 import { Wall } from "@/components/Wall";
 import { Yard } from "@/components/Yard";
@@ -13,16 +14,18 @@ export default async function Home() {
 
   return (
     <main id="top" className="mx-auto w-full max-w-2xl px-5 pb-14 sm:px-6 sm:pb-20">
-      {/* The horizon sits above the fold and below the title, so the theme
-          arrives before a word of copy does. */}
-      <Yard className="-mx-5 pt-10 opacity-90 sm:-mx-6" />
+      <div className="pt-10">
+        <LiveCount />
+      </div>
 
-      <LiveCount />
+      {/* The horizon arrives before a word of copy does. */}
+      <Yard className="-mx-5 opacity-90 sm:-mx-6" zombies />
 
       <header className="flex flex-col gap-5">
-        <h1 className="text-4xl leading-[1.05] font-semibold tracking-tight sm:text-5xl">
-          Feature Graveyard
-        </h1>
+        <DigTitle
+          text="Feature Graveyard"
+          className="text-4xl leading-[1.05] font-semibold tracking-tight sm:text-5xl"
+        />
         <p className="prose-tight max-w-prose text-lg leading-relaxed text-body">
           Things we built that nobody used. Register one and you get a plot, a
           certificate and an hour count — so killing it stops being a thing you
@@ -30,14 +33,23 @@ export default async function Home() {
         </p>
         <Link
           href="/bury"
-          className="self-start rounded-full bg-accent px-7 py-3.5 text-sm font-medium tracking-[0.04em] text-ground"
+          className="dig-btn inline-flex items-center gap-2.5 self-start rounded-full bg-accent px-7 py-3.5 text-sm font-medium tracking-[0.04em] text-ground"
         >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ transformOrigin: "12px 4px" }}>
+            <path d="M12 3v11" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+            <path d="M8 14h8v3a4 4 0 0 1-8 0z" fill="currentColor" />
+            <path d="M9.5 3h5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+          </svg>
           Register a death
         </Link>
         {sum.graves > 0 && (
           <p className="text-sm text-muted">
             <span className="text-ink tabular-nums">{all.n}</span>{" "}
-            {all.unit.replace(" of your life", "")} buried across {sum.graves} features.
+            {all.unit.replace(" of your life", "")} buried across{" "}
+            {sum.weighed === sum.graves
+              ? `${sum.graves} features`
+              : `${sum.weighed} of ${sum.graves} features weighed`}
+            .
           </p>
         )}
       </header>
@@ -83,7 +95,7 @@ export default async function Home() {
         <Wall rows={rows} />
       </section>
 
-      <Yard className="-mx-5 mt-16 rotate-180 opacity-40 sm:-mx-6" />
+      <Yard className="-mx-5 mt-16 opacity-55 sm:-mx-6" zombies />
 
       <footer className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-rule pt-8 text-xs text-muted">
         <a href="#top" className="underline underline-offset-4 hover:text-accent">Back to the top</a>

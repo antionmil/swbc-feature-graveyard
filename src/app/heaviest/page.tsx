@@ -34,8 +34,16 @@ export default async function Heaviest() {
         <p className="mt-8 rounded-xl border border-rule bg-surface px-5 py-4">
           <span className="text-2xl font-semibold text-accent tabular-nums">{all.n}</span>{" "}
           <span className="text-body">{all.unit.replace(" of your life", "")}</span>
-          <span className="text-muted"> buried across {sum.graves} features</span>
-          {sum.spend > 0 && <span className="text-muted">, plus ${sum.spend.toLocaleString()}</span>}
+          <span className="text-muted">
+            {" "}
+            buried across{" "}
+            {sum.weighed === sum.graves
+              ? `${sum.graves} features`
+              : `${sum.weighed} of ${sum.graves} features weighed`}
+          </span>
+          {sum.spend > 0 && (
+            <span className="text-muted">, and ${sum.spend.toLocaleString()} on top</span>
+          )}
           <span className="text-muted">.</span>
         </p>
       )}
@@ -74,6 +82,11 @@ export default async function Heaviest() {
                     <span className="block text-[10px] tracking-[0.1em] text-faint uppercase">
                       {h.unit.replace(" of your life", "").replace("full-time ", "")}
                     </span>
+                    {r.spend ? (
+                      <span className="mt-0.5 block text-xs text-muted tabular-nums">
+                        ${r.spend.toLocaleString()}
+                      </span>
+                    ) : null}
                   </span>
                 </Link>
               </li>

@@ -20,7 +20,31 @@ const STONES = [
   { x: 462, w: 30, h: 40, o: 0.58 },
 ];
 
-export function Yard({ className = "" }: { className?: string }) {
+/** A shambling silhouette. Two legs and an arm on separate slow cycles, so the
+ *  gait is uneven — a walk with matching limbs reads as a machine. */
+function Zombie({ delay, dur, scale, y }: { delay: number; dur: number; scale: number; y: number }) {
+  return (
+    <g
+      className="yard-walk"
+      style={{ animationDuration: `${dur}s`, animationDelay: `${delay}s` }}
+      opacity={0.45}
+    >
+      <g transform={`translate(0 ${y}) scale(${scale})`}>
+        <g className="yard-bob">
+          <ellipse cx="0" cy="-19" rx="2.6" ry="3" fill="#0f1216" />
+          <path d="M-2.4 -16 h4.8 v9 h-4.8 Z" fill="#0f1216" />
+          {/* arms out in front, the only bit of the pose that says zombie */}
+          <path d="M2 -14 l6 1.6" stroke="#0f1216" strokeWidth="1.7" strokeLinecap="round" />
+          <path d="M-2 -14 l5.4 2.6" stroke="#0f1216" strokeWidth="1.5" strokeLinecap="round" />
+        </g>
+        <path className="yard-leg-a" d="M-1 -7 v7" stroke="#0f1216" strokeWidth="1.8" strokeLinecap="round" />
+        <path className="yard-leg-b" d="M1 -7 v7" stroke="#0f1216" strokeWidth="1.8" strokeLinecap="round" />
+      </g>
+    </g>
+  );
+}
+
+export function Yard({ className = "", zombies = false }: { className?: string; zombies?: boolean }) {
   return (
     <div aria-hidden className={`pointer-events-none select-none ${className}`}>
       <svg viewBox="0 0 500 70" className="block w-full" preserveAspectRatio="xMidYMax slice">
@@ -35,6 +59,13 @@ export function Yard({ className = "" }: { className?: string }) {
           ))}
         </g>
         <rect y="66" width="500" height="4" fill="#171a1f" />
+        {zombies && (
+          <g>
+            <Zombie delay={0} dur={54} scale={1} y={66} />
+            <Zombie delay={-22} dur={68} scale={0.78} y={69} />
+            <Zombie delay={-41} dur={61} scale={0.9} y={64} />
+          </g>
+        )}
         <g className="yard-fog">
           <ellipse cx="120" cy="62" rx="150" ry="10" fill="#2a3038" opacity=".28" />
           <ellipse cx="380" cy="66" rx="180" ry="9" fill="#2a3038" opacity=".22" />

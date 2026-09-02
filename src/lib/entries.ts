@@ -128,20 +128,23 @@ export const heaviest = unstable_cache(
 /** Everything the graveyard has swallowed. The number that travels. */
 export const totals = unstable_cache(
   async () => {
-    if (!hasDb()) return { graves: 0, hours: 0, spend: 0 };
+    if (!hasDb()) return { graves: 0, hours: 0, spend: 0, weighed: 0 };
     try {
       const [r] = await db()
         .select({
           graves: sql<number>`count(*)::int`,
           hours: sql<number>`coalesce(sum(hours),0)::int`,
           spend: sql<number>`coalesce(sum(spend),0)::int`,
+          // How many actually carry an hour count. The total comes from these
+          // and saying so is the difference between a real figure and a claim.
+          weighed: sql<number>`count(*) filter (where hours is not null)::int`,
         })
         .from(schema.graves)
         .where(eq(schema.graves.status, "approved"));
-      return r ?? { graves: 0, hours: 0, spend: 0 };
+      return r ?? { graves: 0, hours: 0, spend: 0, weighed: 0 };
     } catch (e) {
       console.error("[totals] read failed", e);
-      return { graves: 0, hours: 0, spend: 0 };
+      return { graves: 0, hours: 0, spend: 0, weighed: 0 };
     }
   },
   ["totals"],
