@@ -11,13 +11,16 @@
 @theme {
   --color-ground: #131417;
   --color-surface: #191b1f;
-  --color-ink: #e8e6e1;      /* 15.4:1 */
-  --color-body: #9a9da3;     /*  7.4:1 */
-  --color-muted: #6d7075;    /*  4.6:1 */
-  --color-faint: #6a707a;    /*  4.3:1 */
-  --color-rule: #26282d;     /* decorative divider */
-  --color-edge: #626a76;     /*  3.4:1 — input outlines */
-  --color-accent: #8fae9b;   /* 10.0:1 */
+  /* Every ratio below is measured against the ground above, not estimated.
+     An earlier pass carried figures I had not checked, and two of them were
+     a full point optimistic. */
+  --color-ink: #e8e6e1;      /* 14.77:1 */
+  --color-body: #9a9da3;     /*  6.78:1 */
+  --color-muted: #868b93;    /*  5.37:1 */
+  --color-faint: #7a7e85;    /*  4.52:1 */
+  --color-rule: #26282d;     /* decorative divider, no text on it */
+  --color-edge: #626a76;     /*  3.37:1 — input and control outlines */
+  --color-accent: #8fae9b;   /*  7.63:1 */
   --font-body: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -25,13 +28,13 @@
   :root {
     --color-ground: #f5f3ee;
     --color-surface: #eceae3;
-    --color-ink: #17191c;     /* 15.9:1 */
-    --color-body: #474b52;    /*  7.9:1 */
-    --color-muted: #666b73;   /*  4.8:1 */
-    --color-faint: #767c85;   /*  3.8:1 */
-    --color-rule: #dcd8d0;    /* decorative divider */
-    --color-edge: #8d867c;    /*  3.3:1 — input outlines */
-    --color-accent: #3d6b51;  /*  5.5:1, and 5.5:1 under white button text */
+    --color-ink: #17191c;     /* 15.88:1 */
+    --color-body: #474b52;    /*  7.90:1 */
+    --color-muted: #666b73;   /*  4.84:1 */
+    --color-faint: #646a73;   /*  4.92:1 */
+    --color-rule: #dcd8d0;    /* decorative divider, no text on it */
+    --color-edge: #8d867c;    /*  3.25:1 — input and control outlines */
+    --color-accent: #3d6b51;  /*  5.54:1, and the same under the button text */
   }
 }
 
