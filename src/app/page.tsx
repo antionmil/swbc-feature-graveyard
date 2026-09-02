@@ -4,6 +4,7 @@ import { DigTitle } from "@/components/DigTitle";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LiveCount } from "@/components/LiveCount";
 import { Wall } from "@/components/Wall";
+import { YardPlay } from "@/components/YardPlay";
 import { Yard } from "@/components/Yard";
 import { heaviest, totals, wall } from "@/lib/entries";
 import { bigHours, registry } from "@/lib/toll";
@@ -24,7 +25,7 @@ export default async function Home() {
       </div>
 
       {/* The horizon arrives before a word of copy does. */}
-      <Yard className="-mx-5 mt-4 mb-8 opacity-95 sm:-mx-6" zombies />
+      <YardPlay className="-mx-5 mt-4 mb-8 sm:-mx-6" />
 
       <header className="flex flex-col gap-5">
         <DigTitle
