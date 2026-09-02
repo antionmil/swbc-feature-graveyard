@@ -10,9 +10,16 @@ export { OUTCOMES, isOutcome, type Outcome } from "./outcomes";
 async function readWall(): Promise<Grave[]> {
   if (!hasDb()) return [];
   try {
+    /* Ordered by the date the wall SHOWS, not by the row's insert time. Every
+       seeded entry was imported on the same afternoon, so `created_at` said
+       "2 Sept 2026" for all 22 — a date on which none of these things actually
+       happened — and sorting by it put them in an order the page could not
+       explain. `source_date` is when the person wrote it; a burial somebody
+       registers here has none, so it falls back to when they registered it. */
     return await db().select().from(schema.graves)
       .where(eq(schema.graves.status, "approved"))
-      .orderBy(desc(schema.graves.created_at)).limit(200);
+      .orderBy(sql`coalesce(${schema.graves.source_date}::date, ${schema.graves.created_at}::date) desc`)
+      .limit(200);
   } catch (e) {
     // A wall that cannot read must render empty, never 500.
     console.error("[wall] read failed", e);

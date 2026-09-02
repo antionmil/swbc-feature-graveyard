@@ -142,7 +142,10 @@ export default async function Grave({ params }: { params: Promise<{ slug: string
             <a href={g.source_url} target="_blank" rel="noopener nofollow" className="underline underline-offset-4">
               {g.source_site}
             </a>
-            {g.source_date ? `, ${g.source_date.slice(0, 4)}` : ""}. Retold here in our words, with
+            {g.source_date
+              ? `, ${new Date(g.source_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`
+              : ""}
+            . Retold here in our words, with
             some of theirs kept; the original is linked above.
           </p>
         )}
