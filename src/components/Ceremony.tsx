@@ -268,13 +268,13 @@ export function Ceremony({ feature, hours, spend, id, slug, people, onDone }: Pr
                     <g className="cy-torso">
                       {/* A long coat. At this size the silhouette is the whole
                           character, and a coat gives it one clean outline. */}
-                      <path d="M-10 4 Q-11.5 -14 -6.5 -23 L6.5 -23 Q11.5 -14 10 4 Z" fill="#161c24" />
-                      <path d="M-10 4 Q-4 6.5 0 6.5 Q4 6.5 10 4 L10 5.4 Q0 8.4 -10 5.4 Z" fill="#0e1218" />
+                      <path d="M-11.4 4.5 Q-12 -14 -6.5 -23 L6.5 -23 Q12 -14 11.4 4.5 Z" fill="#161c24" />
+                      <path d="M-11.4 4.5 Q-4.5 7 0 7 Q4.5 7 11.4 4.5 L11.4 6 Q0 9 -11.4 6 Z" fill="#0e1218" />
                       <path d="M-1.2 -20 L-1.2 4" stroke="#0d1116" strokeWidth="1.4" />
                       {/* the hood, and the dark where a face would be */}
-                      <path d="M-8.2 -20 a8.2 8.2 0 0 1 16.4 -1 q0.6 6.4 -2.4 9.4 h-11 q-3 -2.6 -3 -8.4 Z" fill="#1e2530" />
-                      <path d="M-8.2 -20 a8.2 8.2 0 0 1 6.4 -8 l1 2.6 a5.8 5.8 0 0 0 -4.6 5.6 Z" fill="#33404f" />
-                      <path d="M3 -23.4 q5 1.4 4.6 7 q-0.3 4.4 -3 6.4 l-5.6 0 q-3.4 -3.6 -2.4 -8.4 q0.8 -4 6.4 -5 Z" fill="#090c11" />
+                      <path d="M-8.6 -20.4 a8.6 8.6 0 0 1 17.2 0 q0 5.8 -2.1 8.9 h-13 q-2.1 -3.1 -2.1 -8.9 Z" fill="#1f2632" />
+                      <circle cx="2.6" cy="-20.1" r="5.7" fill="#080b0f" />
+                      <path d="M-8.6 -20.4 a8.6 8.6 0 0 1 5.3 -7.95 l1.15 2.55 a5.9 5.9 0 0 0 -3.65 5.4 Z" fill="#3a4859" />
                       <g transform="translate(1.5,-16)">
                         <g className="cy-arm">
                           <path d="M0 0 L19 17" stroke="#1b222c" strokeWidth="5.4" strokeLinecap="round" />
