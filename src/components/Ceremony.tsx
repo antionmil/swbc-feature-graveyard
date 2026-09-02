@@ -21,6 +21,7 @@ type Props = {
   spend: number | null;
   id: number;
   slug: string;
+  people: number;
   onDone?: () => void;
 };
 
@@ -44,12 +45,12 @@ function inscribe(name: string) {
   return { lines: kept, size };
 }
 
-export function Ceremony({ feature, outcome, hours, spend, id, slug, onDone }: Props) {
+export function Ceremony({ feature, outcome, hours, spend, id, slug, people, onDone }: Props) {
   const [phase, setPhase] = useState<"run" | "done">("run");
   const [shown, setShown] = useState(0);
   const box = useRef<HTMLDivElement>(null);
   const ins = inscribe(feature);
-  const big = bigHours(hours);
+  const big = bigHours(hours, people);
 
   useEffect(() => {
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -156,7 +157,7 @@ export function Ceremony({ feature, outcome, hours, spend, id, slug, onDone }: P
             </span>
             <span className="text-base text-body">{big.unit}</span>
           </p>
-          <p className="prose-tight mt-2 text-sm text-body">{compare(hours)}</p>
+          <p className="prose-tight mt-2 text-sm text-body">{compare(hours, people)}</p>
           {spend ? (
             <p className="mt-2 text-sm text-muted">
               Also spent <span className="text-ink">${spend.toLocaleString()}</span>.

@@ -28,22 +28,31 @@ export function hoursOf(people: number, weeks: number, effort: string) {
   return Math.max(1, Math.round(people * weeks * rate));
 }
 
-/** Said back in a way you feel. Never a second number — one comparison, in
- *  units a person can picture. */
-export function compare(hours: number): string {
-  const ftWeeks = hours / 40;
-  if (hours < 40) return `Less than a working week — but a week you did not get back.`;
-  if (ftWeeks < 4) return `${Math.round(ftWeeks)} full-time weeks. A month of Mondays.`;
-  if (ftWeeks < 13) return `${Math.round(ftWeeks)} full-time weeks. A whole quarter of evenings.`;
-  if (ftWeeks < 52) return `${Math.round(ftWeeks / 4.33)} full-time months. Long enough to have learned something else entirely.`;
-  const years = ftWeeks / 52;
-  return `${years.toFixed(1)} full-time years. That is a chapter of a career.`;
+/**
+ * Said back in a way you feel. One comparison, in units a person can picture.
+ *
+ * The unit changes with the team size, and that is not pedantry: three people
+ * for twenty weeks is 1.2 PERSON-years, not 1.2 years of anybody's life, and
+ * saying "of your life" to someone who led a team of three is simply wrong.
+ */
+export function compare(hours: number, people = 1): string {
+  const w = hours / 40;
+  const each = people > 1 ? "person-" : "";
+  if (hours < 40) return "Less than a working week — but a week nobody got back.";
+  if (w < 4) return `${Math.round(w)} full-time ${each}weeks. A month of Mondays.`;
+  if (w < 13) return `${Math.round(w)} full-time ${each}weeks. A whole quarter of them.`;
+  if (w < 52)
+    return `${Math.round(w / 4.33)} full-time ${each}months. Long enough to have learned something else entirely.`;
+  return `${(w / 52).toFixed(1)} full-time ${each}years. That is a chapter of a career.`;
 }
 
-/** "312 hours" reads flat past a few hundred. */
-export function bigHours(hours: number) {
-  if (hours < 1000) return { n: hours.toLocaleString(), unit: "hours of your life" };
-  return { n: (hours / 40).toFixed(0), unit: "full-time weeks of your life" };
+/** "312 hours" reads flat past a few hundred, so it switches unit — and the
+ *  possessive drops away as soon as more than one person is involved. */
+export function bigHours(hours: number, people = 1) {
+  const mine = people > 1 ? "" : " of your life";
+  const each = people > 1 ? "person-" : "";
+  if (hours < 1000) return { n: hours.toLocaleString(), unit: `${each}hours${mine}` };
+  return { n: Math.round(hours / 40).toLocaleString(), unit: `full-time ${each}weeks${mine}` };
 }
 
 export const registry = (id: number) => `NO. ${String(id).padStart(4, "0")}`;

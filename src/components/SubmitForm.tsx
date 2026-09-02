@@ -95,6 +95,7 @@ export function SubmitForm() {
             spend={buried.spend}
             id={buried.id}
             slug={slug}
+            people={people}
           />
         )}
       <div className="rounded-xl border border-rule bg-surface p-6">
@@ -199,8 +200,8 @@ export function SubmitForm() {
         </label>
 
         <p className="text-sm text-body">
-          <span className="font-medium text-accent tabular-nums">{live.toLocaleString()}</span> hours
-          of your life. <span className="text-faint">That is what goes on the stone.</span>
+          <span className="font-medium text-accent tabular-nums">{live.toLocaleString()}</span>{" "}
+          {people > 1 ? "person-hours" : "hours of your life"}. <span className="text-faint">That is what goes on the stone.</span>
         </p>
 
         <label className="flex flex-col gap-1.5">
