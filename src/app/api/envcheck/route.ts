@@ -14,6 +14,10 @@ export async function GET() {
     hasDb: hasDb(),
     databaseShapedNames: names,
     adminPasswordSet: Boolean(process.env.ADMIN_PASSWORD),
+    limitsRaw: {
+      IP_DAILY_LIMIT: JSON.stringify(process.env.IP_DAILY_LIMIT ?? null),
+      DAILY_GENERATION_CEILING: JSON.stringify(process.env.DAILY_GENERATION_CEILING ?? null),
+    },
     build: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local",
   });
 }
