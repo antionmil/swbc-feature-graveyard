@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { OUTCOMES } from "@/lib/outcomes";
+import { OTHER, OUTCOMES } from "@/lib/outcomes";
 
 export function SubmitForm() {
   const [startedAt] = useState(() => Date.now());
+  const [outcome, setOutcome] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -22,6 +23,7 @@ export function SubmitForm() {
           feature: f.get("feature"),
           summary: f.get("summary"),
           outcome: f.get("outcome"),
+          outcome_other: f.get("outcome_other"),
           time_spent: f.get("time_spent"),
           author: f.get("author"),
           trap: f.get("website"), // honeypot
@@ -91,10 +93,29 @@ export function SubmitForm() {
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-1.5">
           <span className="text-xs tracking-[0.1em] text-muted uppercase">Outcome</span>
-          <select name="outcome" required defaultValue="" className={field}>
+          <select
+            name="outcome"
+            required
+            value={outcome}
+            onChange={(e) => setOutcome(e.target.value)}
+            className={field}
+          >
             <option value="" disabled>Pick one</option>
             {OUTCOMES.map((o) => <option key={o} value={o}>{o}</option>)}
+            <option value={OTHER}>something else…</option>
           </select>
+          {/* Only asked for once it is needed. A second empty box sitting there
+              permanently makes the form look longer than it is. */}
+          {outcome === OTHER && (
+            <input
+              name="outcome_other"
+              required
+              maxLength={32}
+              autoFocus
+              className={`${field} mt-1.5`}
+              placeholder="in a couple of words"
+            />
+          )}
         </label>
 
         <label className="flex flex-col gap-1.5">

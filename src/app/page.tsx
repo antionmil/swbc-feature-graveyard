@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Wall } from "@/components/Wall";
+import { LiveCount } from "@/components/LiveCount";
 import { SubmitForm } from "@/components/SubmitForm";
 import { wall } from "@/lib/entries";
 
@@ -22,12 +23,12 @@ export default async function Home() {
           the pile, so it is a bit less lonely.
         </p>
         {/* On a long wall the form is a very long way down. */}
-        <a
-          href="#submit"
-          className="self-start text-sm text-accent underline underline-offset-4"
-        >
-          Add yours
-        </a>
+        <div className="mt-1 flex flex-wrap items-center gap-x-5 gap-y-2">
+          <a href="#submit" className="text-sm text-accent underline underline-offset-4">
+            Add yours
+          </a>
+          <LiveCount />
+        </div>
       </header>
 
       <Wall rows={rows} />

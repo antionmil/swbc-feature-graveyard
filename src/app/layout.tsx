@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import { Pulse } from "@/components/Pulse";
 import "./globals.css";
 
 const TITLE = "Feature Graveyard";
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-dvh antialiased">
         {children}
+        <Pulse />
         <Analytics />
       </body>
     </html>

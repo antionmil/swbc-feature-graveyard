@@ -46,3 +46,19 @@ export const events = pgTable("events", {
   n: integer("n").notNull().default(0),
   day: text("day").notNull(),
 }, (t) => [index("events_day_idx").on(t.day)]);
+
+/** Visitor counts. One random id per browser, generated client-side and kept
+ *  in localStorage. No IP address, no user agent, no referrer — nothing here
+ *  identifies a person, and that is also what makes "visitors" mean people
+ *  rather than page views. */
+export const visitors = pgTable("visitors", {
+  sid: text("sid").primaryKey(),
+  first_seen: timestamp("first_seen", { withTimezone: true }).notNull().defaultNow(),
+  last_seen: timestamp("last_seen", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("visitors_last_seen_idx").on(t.last_seen)]);
+
+/** Page views, and anything else worth a running total. */
+export const counters = pgTable("counters", {
+  key: text("key").primaryKey(),
+  n: integer("n").notNull().default(0),
+});

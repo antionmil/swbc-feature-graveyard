@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Entry } from "@/components/Entry";
 import type { Grave } from "@/lib/entries";
-import { OUTCOMES } from "@/lib/outcomes";
+
 
 /** Filtering happens here, not in the URL, so the page stays cacheable and a
  *  chip click costs nothing. */
@@ -25,20 +25,28 @@ export function Wall({ rows }: { rows: Grave[] }) {
     );
   }
 
+  /* The count gets its own weight and spacing. Set flush against the label it
+     read as one run-on string — "shipped, unused 5" looked like a typo. */
   const chip = (active: boolean) =>
-    `rounded-full border px-3.5 py-1.5 text-xs transition-colors ${
+    `inline-flex items-baseline gap-2 rounded-full border px-3.5 py-1.5 text-xs transition-colors ${
       active ? "border-accent text-accent" : "border-rule text-muted hover:border-faint hover:text-body"
     }`;
+  const num = (active: boolean) =>
+    `tabular-nums text-[11px] ${active ? "text-accent/70" : "text-faint"}`;
 
   return (
     <>
       <nav className="mt-9 flex flex-wrap gap-2" aria-label="Filter by outcome">
         <button onClick={() => setPicked(null)} className={chip(!picked)}>
-          all {rows.length}
+          <span>all</span>
+          <span className={num(!picked)}>{rows.length}</span>
         </button>
-        {OUTCOMES.filter((o) => counts.get(o)).map((o) => (
+        {[...counts.keys()]
+          .sort((a, b) => (counts.get(b) ?? 0) - (counts.get(a) ?? 0))
+          .map((o) => (
           <button key={o} onClick={() => setPicked(o)} className={chip(picked === o)}>
-            {o} {counts.get(o)}
+            <span>{o}</span>
+            <span className={num(picked === o)}>{counts.get(o)}</span>
           </button>
         ))}
       </nav>
