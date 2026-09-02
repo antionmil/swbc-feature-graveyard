@@ -88,35 +88,25 @@ function wrap(text: string, budget: number) {
   return out;
 }
 
-/**
- * One line, cut into the stone rather than printed on it.
- *
- * Three copies of the same glyphs. The moon sits up and to the right of the
- * grave, so the wall of an incised groove that faces up-right is in shadow and
- * the wall facing down-left catches the light — a dark copy offset up-right, a
- * bright copy offset down-left, and the letter itself on top in the paler tone
- * of freshly cut stone. That last part is also why the text stays readable:
- * a real cut exposes lighter stone than the weathered face around it.
- */
+/** One line of the inscription. The relief comes from the cyCut filter on the
+ *  group above, not from stacked copies, so the glyphs are drawn exactly once. */
 function Carved({
   y, size, fill = "#98a1ad", track, weight, children,
 }: {
   y: number; size: number; fill?: string; track?: number; weight?: number; children: string;
 }) {
-  const base = {
-    textAnchor: "middle" as const,
-    fontFamily: "Georgia, 'Times New Roman', serif",
-    fontSize: size,
-    fontWeight: weight,
-    letterSpacing: track,
-  };
-  const d = size >= 7 ? 0.85 : 0.6;
   return (
-    <g>
-      <text {...base} x={d} y={y - d} fill="#05070a">{children}</text>
-      <text {...base} x={-d * 0.9} y={y + d * 0.9} fill="#f2f5f8" opacity="0.62">{children}</text>
-      <text {...base} y={y} fill={fill}>{children}</text>
-    </g>
+    <text
+      textAnchor="middle"
+      fontFamily="Georgia, 'Times New Roman', serif"
+      fontSize={size}
+      fontWeight={weight}
+      letterSpacing={track}
+      y={y}
+      fill={fill}
+    >
+      {children}
+    </text>
   );
 }
 
@@ -264,6 +254,48 @@ export function Ceremony({ feature, author, hours, spend, id, slug, people, onDo
               <stop offset="0" stopColor="#0d0e0a" />
               <stop offset="1" stopColor="#050603" />
             </linearGradient>
+            {/* The incision.
+                Three offset copies of the glyphs was the wrong technique: at
+                this size the offset needed to be visible was large enough to
+                read as a second copy of the text rather than as a bevel, which
+                is exactly what it looked like. This does it with one set of
+                glyphs and two blurred edges instead — the moon is up and to the
+                right, so the groove wall facing up-right is dark and the wall
+                facing down-left catches the light. Blurred, so it reads as
+                depth and never as a ghost. */}
+            {/* Two of them, because the offset that reads as a bevel on the
+                8-unit name is a tenth of an em on the 5-unit lines, and there
+                it blooms into a fuzz instead. */}
+            <filter id="cyCutSm" x="-14%" y="-14%" width="128%" height="128%">
+              <feOffset in="SourceAlpha" dx="0.3" dy="-0.3" result="upR" />
+              <feGaussianBlur in="upR" stdDeviation="0.2" result="upRb" />
+              <feFlood floodColor="#04060a" floodOpacity="0.9" result="darkInk" />
+              <feComposite in="darkInk" in2="upRb" operator="in" result="darkEdge" />
+              <feOffset in="SourceAlpha" dx="-0.26" dy="0.26" result="dnL" />
+              <feGaussianBlur in="dnL" stdDeviation="0.18" result="dnLb" />
+              <feFlood floodColor="#f4f7fb" floodOpacity="0.4" result="liteInk" />
+              <feComposite in="liteInk" in2="dnLb" operator="in" result="liteEdge" />
+              <feMerge>
+                <feMergeNode in="darkEdge" />
+                <feMergeNode in="liteEdge" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+            <filter id="cyCut" x="-8%" y="-8%" width="116%" height="116%">
+              <feOffset in="SourceAlpha" dx="0.5" dy="-0.5" result="upR" />
+              <feGaussianBlur in="upR" stdDeviation="0.32" result="upRb" />
+              <feFlood floodColor="#04060a" floodOpacity="0.95" result="darkInk" />
+              <feComposite in="darkInk" in2="upRb" operator="in" result="darkEdge" />
+              <feOffset in="SourceAlpha" dx="-0.42" dy="0.42" result="dnL" />
+              <feGaussianBlur in="dnL" stdDeviation="0.3" result="dnLb" />
+              <feFlood floodColor="#f4f7fb" floodOpacity="0.55" result="liteInk" />
+              <feComposite in="liteInk" in2="dnLb" operator="in" result="liteEdge" />
+              <feMerge>
+                <feMergeNode in="darkEdge" />
+                <feMergeNode in="liteEdge" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
             <linearGradient id="cyStoneFace" x1="0" y1="0" x2="0.4" y2="1">
               <stop offset="0" stopColor="#454c56" />
               <stop offset="1" stopColor="#2b3038" />
@@ -466,18 +498,22 @@ export function Ceremony({ feature, author, hours, spend, id, slug, people, onDo
                 <path d="M-38 -4 V-54 A76 76 0 0 1 38 -54 V-4 Z" fill="#242a32" opacity="0.55" />
                 <path d="M-38 -4 V-54 A76 76 0 0 1 38 -54" fill="none" stroke="#0e1217" strokeWidth="0.7" opacity="0.65" />
 
-                <Carved y={PANEL.header} size={PANEL.headerSize} track={PANEL.headerTrack} fill="#7d8794">
-                  HERE LIES
-                </Carved>
+                <g filter="url(#cyCutSm)">
+                  <Carved y={PANEL.header} size={PANEL.headerSize} track={PANEL.headerTrack} fill="#7d8794">
+                    HERE LIES
+                  </Carved>
+                  {ins.by ? (
+                    <Carved y={PANEL.byline} size={ins.bySize} fill="#7d8794">{ins.by}</Carved>
+                  ) : null}
+                  <Carved y={PANEL.registry} size={5} track={1.6} fill="#6f7885">{registry(id)}</Carved>
+                </g>
+                <g filter="url(#cyCut)">
                 {ins.lines.map((l) => (
                   <Carved key={l.y} y={l.y} size={ins.size} weight={500} fill="#a5aeba">
                     {l.text}
                   </Carved>
                 ))}
-                {ins.by ? (
-                  <Carved y={PANEL.byline} size={ins.bySize} fill="#7d8794">{ins.by}</Carved>
-                ) : null}
-                <Carved y={PANEL.registry} size={5} track={1.6} fill="#6f7885">{registry(id)}</Carved>
+                </g>
               </g>
             </g>
           </g>
