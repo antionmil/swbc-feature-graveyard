@@ -48,10 +48,22 @@ export function startPulse() {
   if (started) return;
   started = true;
   send(true); // the view
-  setInterval(() => {
-    // A hidden tab is not a person sitting there.
-    if (document.visibilityState === "visible") send(false);
-  }, 30_000);
+
+  /* Every 30 seconds was enough to stop Neon ever auto-suspending: it sleeps
+     after five minutes idle, and a single tab left open kept writing forever.
+     On the free tier that is the compute budget spent on a counter. Two minutes
+     still reads as live, and a tab nobody has touched for twenty stops asking —
+     it will start again the moment they do something. */
+  let idle = 0;
+  const wake = () => { idle = 0; };
+  for (const ev of ["pointerdown", "keydown", "scroll", "visibilitychange"]) {
+    addEventListener(ev, wake, { passive: true });
+  }
+  const beat = setInterval(() => {
+    if (document.visibilityState !== "visible") return; // not a person sitting there
+    if (++idle > 10) { clearInterval(beat); return; }
+    send(false);
+  }, 120_000);
 }
 
 export function subscribe(f: (c: Counts) => void) {

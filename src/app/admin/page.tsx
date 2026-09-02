@@ -1,4 +1,4 @@
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { db, hasDb, schema } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -35,14 +35,25 @@ export default async function Admin({
     );
   }
 
-  const rows = await db()
+  /* Pending is its own query. It used to take the newest 100 rows of ANY status
+     and filter in JavaScript, so approved and rejected rows ate the same 100
+     slots — past a hundred rows the oldest waiting submissions fell out of the
+     result and could not be reached by any control on the page, while their
+     plot page told the person it would appear "once it has been read". With no
+     per-visitor submission cap any more, a single burst gets there in one go. */
+  const pending = await db()
     .select()
     .from(schema.graves)
+    .where(eq(schema.graves.status, "pending"))
     .orderBy(desc(schema.graves.created_at))
-    .limit(100);
+    .limit(200);
 
-  const pending = rows.filter((r) => r.status === "pending");
-  const rest = rows.filter((r) => r.status !== "pending");
+  const rest = await db()
+    .select()
+    .from(schema.graves)
+    .where(eq(schema.graves.status, "approved"))
+    .orderBy(desc(schema.graves.created_at))
+    .limit(40);
 
   return (
     <main className="mx-auto w-full max-w-2xl px-5 py-14">
@@ -51,7 +62,8 @@ export default async function Admin({
       </a>
       <h1 className="mt-4 text-2xl font-semibold">Queue</h1>
       <p className="mt-1 text-sm text-muted">
-        {pending.length} waiting · {rest.length} decided
+        {pending.length}
+        {pending.length === 200 ? "+" : ""} waiting · newest first
       </p>
 
       <section className="mt-8 flex flex-col gap-6">
@@ -60,10 +72,36 @@ export default async function Admin({
           <article key={r.id} className="rounded-xl border border-rule bg-surface p-5">
             <h2 className="font-medium text-ink">{r.feature}</h2>
             <p className="mt-1.5 leading-relaxed text-body">{r.summary}</p>
-            <p className="mt-2 text-xs text-muted">
+
+            {/* Everything that gets published, not a third of it. The queue used
+                to show feature, summary, outcome, time and author only — so the
+                free-text lesson that goes out under a real name, the hours that
+                move a public total, the outbound link and the image were all
+                approved sight unseen. "Nothing reaches the wall unread" has to
+                mean the whole row. */}
+            {r.lesson && (
+              <p className="mt-3 border-l-2 border-accent/40 pl-3 text-sm leading-relaxed text-ink/80">
+                <span className="text-[10px] tracking-[0.2em] text-accent uppercase">Lesson </span>
+                {r.lesson}
+              </p>
+            )}
+            {r.image_url && (
+              <a href={r.image_url} target="_blank" rel="noopener nofollow" className="mt-3 block">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={r.image_url} alt="" className="max-h-48 rounded-lg border border-rule" />
+              </a>
+            )}
+            <p className="mt-3 text-xs text-muted">
               {r.outcome}
               {r.time_spent ? ` · ${r.time_spent}` : ""}
-              {r.author ? ` · ${r.author}` : ""}
+              {r.people && r.weeks ? ` · ${r.people} × ${r.weeks} ${r.effort ?? ""}` : ""}
+              {r.hours ? ` · ${r.hours.toLocaleString()} h` : ""}
+              {r.spend ? ` · $${r.spend.toLocaleString()}` : ""}
+            </p>
+            <p className="mt-1 text-xs text-muted">
+              {r.author ? `by ${r.author}` : "anonymous"}
+              {r.author_url ? ` · ${r.author_url}` : ""}
+              {` · /g/${r.slug}`}
             </p>
             <div className="mt-4 flex gap-3">
               <Decide id={r.id} to="approved" label="Publish" k={k!} primary />

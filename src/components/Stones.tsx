@@ -21,13 +21,18 @@ export function Stones({
   graveId,
   initial,
   hydrated,
+  managed = false,
   compact = false,
 }: {
   graveId: number;
   initial: number;
-  /** Supplied when a parent has already fetched the whole page's counts, so
-   *  a wall of cards costs one request instead of one per card. */
+  /** The parent's batched result for this grave, once it arrives. */
   hydrated?: { total: number; mine: boolean };
+  /** The parent owns the fetching. Without this flag every card fired its own
+   *  request ON TOP of the batch — `hydrated` is undefined on first render, so
+   *  guarding on the value guarded nothing, and one reader cost 26 function
+   *  invocations instead of one. */
+  managed?: boolean;
   compact?: boolean;
 }) {
   const [total, setTotal] = useState(initial);
@@ -38,9 +43,8 @@ export function Stones({
   const start = useRef<number | null>(null);
 
   useEffect(() => {
-    if (hydrated) {
-      setTotal(hydrated.total);
-      setMine(hydrated.mine);
+    if (managed) {
+      if (hydrated) { setTotal(hydrated.total); setMine(hydrated.mine); }
       return;
     }
     fetch(`/api/stones?grave=${graveId}&sid=${encodeURIComponent(visitorId())}`)
@@ -50,7 +54,7 @@ export function Stones({
         if (typeof d.mine === "boolean") setMine(d.mine);
       })
       .catch(() => {});
-  }, [graveId, hydrated?.total, hydrated?.mine]);
+  }, [graveId, managed, hydrated?.total, hydrated?.mine]);
 
   async function toggle() {
     const next = !mine;
@@ -66,6 +70,7 @@ export function Stones({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ grave: graveId, sid: visitorId(), on: next }),
       });
+      if (!r.ok) throw new Error(String(r.status));
       const d = await r.json();
       if (typeof d.total === "number") setTotal(d.total);
       if (typeof d.mine === "boolean") setMine(d.mine);
@@ -101,6 +106,21 @@ export function Stones({
     setFill(0);
   }
 
+  /* Holding a key repeats keydown, so the guard on start.current is what makes
+     this one press and not fifty. The same fill runs, so a keyboard user gets
+     the same half second of pressure and the same feedback. */
+  function keyDown(e: React.KeyboardEvent) {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    e.preventDefault();
+    if (e.repeat || start.current !== null) return;
+    down(e as unknown as React.PointerEvent);
+  }
+  function keyUp(e: React.KeyboardEvent) {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    e.preventDefault();
+    up();
+  }
+
   return (
     <div className={`flex flex-wrap items-center ${compact ? "gap-x-2.5 gap-y-1" : "gap-x-4 gap-y-2"}`}>
       <button
@@ -108,8 +128,13 @@ export function Stones({
         onPointerUp={up}
         onPointerLeave={up}
         onPointerCancel={up}
+        onKeyDown={keyDown}
+        onKeyUp={keyUp}
+        onBlur={up}
         aria-pressed={mine}
-        aria-label={mine ? "Lift your stone back off" : "Hold to leave a stone"}
+        aria-label={
+          mine ? "Lift your stone back off" : "Hold Enter or Space to leave a stone"
+        }
         className={`relative touch-none overflow-hidden rounded-full border transition-colors select-none ${
           compact ? "px-3 py-1 text-xs" : "px-4 py-2 text-sm"
         } ${mine ? "border-accent text-accent" : "border-edge text-muted hover:text-body"}`}

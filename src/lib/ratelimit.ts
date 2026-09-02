@@ -18,8 +18,13 @@ function positive(raw: string | undefined, fallback: number) {
 
    What stays is the global daily ceiling, which is not a limit on a person but
    a backstop against a runaway script turning into a bill, and the honeypot,
-   which no human ever touches. */
-const CEILING = positive(process.env.DAILY_GENERATION_CEILING, 2000);
+   which no human ever touches.
+
+   The ceiling is deliberately far above any human volume. With no per-person
+   cap it is the ONLY gate, so a low one would let a single script lock every
+   visitor out for the rest of the day — the failure mode is now shared, which
+   makes a tight number worse than a loose one. */
+const CEILING = positive(process.env.DAILY_GENERATION_CEILING, 20_000);
 
 /* Counters are day-scoped, so yesterday's entries are dead weight. Without
    this the map gained one entry per IP per day and never shed any. */

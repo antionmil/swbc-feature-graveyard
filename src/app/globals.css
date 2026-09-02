@@ -11,17 +11,20 @@
 @theme {
   --color-ground: #131417;
   --color-surface: #191b1f;
-  /* Every ratio below is measured against the ground above, not estimated.
-     An earlier pass carried figures I had not checked, and two of them were
-     a full point optimistic. */
-  --color-ink: #e8e6e1;      /* 14.77:1 */
-  --color-body: #9a9da3;     /*  6.78:1 */
-  --color-muted: #868b93;    /*  5.37:1 */
-  --color-faint: #7a7e85;    /*  4.52:1 */
+  /* Two numbers each, both measured, never estimated: against the page ground
+     and against `surface` — the cards, the inputs, the search box. Only the
+     ground was checked before, and surface is the lighter of the two here, so
+     placeholder text that read as 4.52:1 was actually 4.23:1 where it is used.
+     The SECOND number is the one that has to clear AA (4.5 for text, 3.0 for a
+     control outline), because that is where these colours are painted. */
+  --color-ink: #e8e6e1;      /* 14.77 / 13.82 */
+  --color-body: #9a9da3;     /*  6.78 / 6.34 */
+  --color-muted: #868b93;    /*  5.37 / 5.03 */
+  --color-faint: #8b8f97;    /*  5.68 / 5.32 — placeholders live on surface */
   --color-rule: #26282d;     /* decorative divider, no text on it */
-  --color-edge: #626a76;     /*  3.37:1 — input and control outlines */
-  --color-accent: #8fae9b;   /*  7.63:1 */
-  --font-body: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+  --color-edge: #6a7280;     /*  3.79 / 3.55 — input and control outlines */
+  --color-accent: #8fae9b;   /*  7.63 / 7.14 */
+  --font-body: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
 }
 
 /* Light is a CHOICE, not a consequence of the operating system. It was on
@@ -31,13 +34,13 @@
 :root[data-theme="light"] {
   --color-ground: #f5f3ee;
   --color-surface: #eceae3;
-  --color-ink: #17191c;     /* 15.88:1 */
-  --color-body: #474b52;    /*  7.90:1 */
-  --color-muted: #666b73;   /*  4.84:1 */
-  --color-faint: #646a73;   /*  4.92:1 */
+  --color-ink: #17191c;     /* 15.88 / 14.63 */
+  --color-body: #474b52;    /*  7.90 / 7.28 */
+  --color-muted: #5c616a;   /*  5.60 / 5.17 — form labels sit on surface */
+  --color-faint: #5f656e;   /*  5.35 / 4.94 */
   --color-rule: #dcd8d0;    /* decorative divider, no text on it */
-  --color-edge: #8d867c;    /*  3.25:1 — input and control outlines */
-  --color-accent: #3d6b51;  /*  5.54:1, and the same under the button text */
+  --color-edge: #837c72;    /*  3.72 / 3.43 — input and control outlines */
+  --color-accent: #3d6b51;  /*  5.54 / 5.10, and the same under the button text */
 }
 
 html, body { background: var(--color-ground); color: var(--color-ink); }
@@ -67,7 +70,12 @@ body { font-family: var(--font-body); }
   100% { transform: none; opacity: 1 }
 }
 .stone-drop { animation: stone-drop .5s cubic-bezier(.3,1.4,.5,1) both; }
-@media (prefers-reduced-motion: reduce) { .stone-drop { animation: none } }
+@media (prefers-reduced-motion: reduce) {
+  .stone-drop { animation: none }
+  /* Tailwind's animate-ping is the one thing on the page the reduced-motion
+     rules did not reach — it pulses forever in the corner of every screen. */
+  .animate-ping { animation: none }
+}
 
 /* THE BURIAL — one 9s sequence, nine seconds of somebody doing a job.
 

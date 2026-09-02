@@ -33,6 +33,16 @@ export async function generateMetadata({
   const title = g.feature;
   const description = g.summary.slice(0, 180);
   const images = [{ url: `${SITE}/g/${slug}/card`, width: 1200, height: 630, alt: title }];
+  /* Unreviewed. The submitter keeps their link, but nothing about it goes into
+     an index or into a card that reads as though the site stands behind it. */
+  if (g.status !== "approved") {
+    return {
+      title: `${title} — awaiting review`,
+      description: "This burial has not been read yet.",
+      robots: { index: false, follow: false },
+    };
+  }
+
   return {
     title: `${title} — Feature Graveyard`,
     description,
@@ -132,7 +142,8 @@ export default async function Grave({ params }: { params: Promise<{ slug: string
             <a href={g.source_url} target="_blank" rel="noopener nofollow" className="underline underline-offset-4">
               {g.source_site}
             </a>
-            {g.source_date ? `, ${g.source_date.slice(0, 4)}` : ""}. Summarised here, not quoted.
+            {g.source_date ? `, ${g.source_date.slice(0, 4)}` : ""}. Retold here in our words, with
+            some of theirs kept; the original is linked above.
           </p>
         )}
 
@@ -176,7 +187,7 @@ export default async function Grave({ params }: { params: Promise<{ slug: string
       </article>
 
       <footer className="mt-14 border-t border-rule pt-8 text-xs text-muted">
-        <Link href="/#submit" className="underline underline-offset-4 hover:text-accent">
+        <Link href="/bury" className="underline underline-offset-4 hover:text-accent">
           Bury one of yours
         </Link>
       </footer>

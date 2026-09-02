@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { upload } from "@vercel/blob/client";
 import { MAX_OUTCOME, OTHER, OUTCOMES } from "@/lib/outcomes";
 import { Ceremony } from "@/components/Ceremony";
@@ -24,6 +24,9 @@ export function SubmitForm() {
   const [shot, setShot] = useState<{ name: string; url: string } | null>(null);
   const [shooting, setShooting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
 
   async function pickShot(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -131,8 +134,23 @@ export function SubmitForm() {
 
         <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm">
           <a href={`/g/${slug}`} className="text-accent underline underline-offset-4">See the plot</a>
-          <a href="#top" className="text-muted underline underline-offset-4 hover:text-ink">Back to the wall</a>
-          <button onClick={() => { setSlug(null); setBuried(null); }} className="text-muted underline underline-offset-4 hover:text-ink">
+          <a href="/" className="text-muted underline underline-offset-4 hover:text-ink">Back to the wall</a>
+          <button
+            onClick={() => {
+              /* A full reset. Leaving the previous entry's title, effort and
+                 screenshot in the fields meant the second burial started as a
+                 copy of the first — and the screenshot in particular would have
+                 been attached to somebody else's story. */
+              setSlug(null);
+              setBuried(null);
+              setShot(null);
+              setErr(null);
+              setOutcomeLabel("");
+              if (fileRef.current) fileRef.current.value = "";
+              formRef.current?.reset();
+            }}
+            className="text-muted underline underline-offset-4 hover:text-ink"
+          >
             Bury another
           </button>
         </div>
@@ -145,7 +163,14 @@ export function SubmitForm() {
     "w-full rounded-lg border border-edge bg-surface px-4 py-3 text-ink outline-none placeholder:text-faint focus:border-accent";
 
   return (
-    <form onSubmit={send} className="flex flex-col gap-4">
+    <form
+      ref={formRef}
+      onSubmit={send}
+      /* No action on purpose — but until React has hydrated, a press would
+         submit as a GET and dump every field into the URL. The button stays
+         disabled until `ready`, so that press cannot happen. */
+      className="flex flex-col gap-4"
+    >
       {/* Honeypot. Hidden from people, irresistible to bots. Not display:none —
           some bots skip those. */}
       <input
@@ -275,7 +300,7 @@ export function SubmitForm() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-xs tracking-[0.1em] text-muted uppercase">
+        <span id="shot-label" className="text-xs tracking-[0.1em] text-muted uppercase">
           A screenshot · optional
         </span>
         {shot ? (
@@ -299,6 +324,7 @@ export function SubmitForm() {
             <input
               ref={fileRef}
               type="file"
+              aria-labelledby="shot-label"
               accept="image/png,image/jpeg,image/webp,image/gif"
               onChange={pickShot}
               disabled={shooting}
@@ -328,10 +354,14 @@ export function SubmitForm() {
         />
       </label>
 
-      {err && <p className="text-sm text-accent">{err}</p>}
+      {/* Announced, not just shown. Without a live region the only feedback on
+          a rejected burial was a colour change nobody hears. */}
+      <p role="alert" aria-live="assertive" className="text-sm text-accent empty:hidden">
+        {err}
+      </p>
 
       <button
-        disabled={busy || shooting}
+        disabled={busy || shooting || !ready}
         className="self-start rounded-full bg-accent px-7 py-3 text-sm font-medium tracking-[0.06em] text-ground disabled:opacity-40"
       >
         {busy ? "Burying…" : "Bury it"}
@@ -339,7 +369,9 @@ export function SubmitForm() {
 
       <p className="prose-tight text-xs text-muted">
         Read before it goes up. No account, no email, nothing stored about you
-        beyond what you typed.
+        beyond what you typed. Your browser keeps one random id so the site knows
+        which stones are yours; it is not linked to you and it never identifies
+        you to us.
       </p>
     </form>
   );

@@ -238,7 +238,12 @@ export function Ceremony({ feature, author, hours, spend, id, slug, people, onDo
   return (
     <div ref={box} className="flex flex-col gap-4">
       <div className="ceremony relative overflow-hidden rounded-xl bg-[#0b0d10]">
-        <svg viewBox="0 34 400 142" className="block w-full" aria-label="A grave is dug for the feature">
+        <svg
+          viewBox="0 34 400 142"
+          className="block w-full"
+          role="img"
+          aria-label="A grave is dug for the feature"
+        >
           <defs>
             <linearGradient id="cySky" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stopColor="#161d27" />

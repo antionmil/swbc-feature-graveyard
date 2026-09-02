@@ -106,19 +106,21 @@ export function Wall({ rows, stones }: { rows: Grave[]; stones: Record<number, n
       </div>
 
       <nav className="mt-6 flex flex-wrap items-start gap-x-6 gap-y-3" aria-label="Filter by outcome">
-        <button onClick={() => setPicked(null)} className={chip(!picked)}>
+        <button onClick={() => setPicked(null)} aria-pressed={!picked} className={chip(!picked)}>
           all
         </button>
         {[...counts.keys()]
           .sort((a, b) => (counts.get(b) ?? 0) - (counts.get(a) ?? 0))
           .map((o) => (
-          <button key={o} onClick={() => setPicked(o)} className={chip(picked === o)}>
+          <button key={o} onClick={() => setPicked(o)} aria-pressed={picked === o} className={chip(picked === o)}>
             {o}
           </button>
         ))}
       </nav>
 
-      <p className="mt-8 text-xs text-muted" aria-live="polite">
+      {/* Not aria-live. It updated on every keystroke of the search box, so a
+          screen reader read the whole count line out again per character. */}
+      <p className="mt-8 text-xs text-muted">
         {matching.length} {matching.length === 1 ? "entry" : "entries"}
         {picked ? ` · ${picked}` : ""}
         {q.trim() ? ` · matching “${q.trim()}”` : ""}

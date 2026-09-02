@@ -16,7 +16,7 @@ no demand, no traction, removed, replaced.
 ## Decisions worth not re-litigating
 
 - **The story leads, the duration is a footnote.** Leading with hours would
-  make this a cost counter, and eleven of the thirteen seeded entries have no
+  make this a cost counter, and sixteen of the twenty-two seeded entries have no
   duration at all. `time_spent` is nullable TEXT — people say "about three
   weeks", not `3`.
 - **Nothing appears unread.** Submissions land as `pending`; the wall reads

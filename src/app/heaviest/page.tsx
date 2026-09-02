@@ -29,10 +29,13 @@ export default async function Heaviest() {
           can outweigh a funded team&rsquo;s sprint. Which is the honest comparison.
         </p>
         <p className="prose-tight max-w-prose text-sm text-muted">
-          People who register their own death say how hard they worked. The
-          entries gathered from public threads rarely do, so those are counted at
-          the lowest band — evenings and weekends — which under-states them on
-          purpose. Every one links to what its author actually wrote.
+          People who register their own death say how hard they worked. For the
+          entries gathered from public threads we use the intensity the author
+          themselves described — &ldquo;four years trying to get my startup to
+          revenue&rdquo; is counted as full time, &ldquo;a year of side-project
+          evenings&rdquo; is not — and where they described none, nothing is
+          counted at all, which is why most of the wall is not on this list.
+          Every row links to what its author actually wrote.
         </p>
         <p className="prose-tight max-w-prose text-sm text-muted">
           Nobody has told us what any of this cost in money. A figure marked

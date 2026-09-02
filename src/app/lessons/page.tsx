@@ -9,7 +9,7 @@ export const revalidate = 60;
 export const metadata: Metadata = {
   title: "What we have learned — Feature Graveyard",
   description:
-    "The part worth keeping. Every lesson somebody drew from the thing they buried, in their own words.",
+    "The part worth keeping: what each person concluded from the thing they buried, retold here and linked back to what they wrote.",
 };
 
 export default async function Lessons() {
@@ -30,6 +30,8 @@ export default async function Lessons() {
         <p className="prose-tight max-w-prose text-lg leading-relaxed text-body">
           Anyone can collect failures. The part worth keeping is what the person
           who lived through one would tell you before you start the same thing.
+          Each of these is our reading of what they wrote, with their words a
+          click away.
         </p>
         {/* The count is the honest one: not every burial comes with a lesson,
             and saying so is cheaper than pretending they all do. */}
@@ -58,9 +60,12 @@ export default async function Lessons() {
                 {/* The lesson leads. On the wall it sits under the story
                     because the story is the point there; here it is the
                     other way round, and the story is the citation. */}
-                <blockquote className="prose-tight text-lg leading-relaxed text-ink sm:text-xl">
+                {/* Not a <blockquote>. These are our summaries of what each
+                    person concluded, not their sentences, and quote marks under
+                    a real name are a claim about who said what. */}
+                <p className="prose-tight text-lg leading-relaxed text-ink sm:text-xl">
                   {g.lesson}
-                </blockquote>
+                </p>
                 <p className="mt-4 text-sm text-muted">
                   <Link
                     href={`/g/${g.slug}`}

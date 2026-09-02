@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { grave, heavierThan, stoneCount, slugs } from "@/lib/entries";
 import { isSlug } from "@/lib/slug";
+import { faceList, ogFonts } from "@/lib/ogFonts";
 import { bigHours, compare, registry } from "@/lib/toll";
 
 export const runtime = "nodejs";
@@ -12,44 +13,22 @@ export async function generateStaticParams() {
   return slugs();
 }
 
-/* ImageResponse cannot use a CSS font-family — it needs real bytes. Google
-   serves woff2 to a modern user-agent, which satori cannot read, so we ask as
-   an old browser to get a TTF back. */
-const CSS = "https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600&display=swap";
-let cache: Promise<Map<number, ArrayBuffer>> | null = null;
-
-async function fonts() {
-  if (!cache) {
-    cache = (async () => {
-      const out = new Map<number, ArrayBuffer>();
-      try {
-        const css = await (
-          await fetch(CSS, { headers: { "User-Agent": "Mozilla/5.0 (compatible; OneDayBuilt/1.0)" } })
-        ).text();
-        const faces = [...css.matchAll(/font-weight:\s*(\d+);[\s\S]*?src:\s*url\(([^)]+)\)/g)];
-        await Promise.all(
-          faces.map(async ([, w, url]) => out.set(Number(w), await (await fetch(url)).arrayBuffer())),
-        );
-      } catch {
-        // A font failure must never take down the card.
-      }
-      return out;
-    })();
-  }
-  return cache;
-}
-
 export async function GET(_req: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   if (!isSlug(slug)) return new Response("Not found", { status: 404 });
 
   const g = await grave(slug);
   if (!g) return new Response("Not found", { status: 404 });
+  /* No certificate for something nobody has read. The plot page still exists
+     for whoever buried it; a signed-looking image on the owner's domain does
+     not. */
+  if (g.status !== "approved") return new Response("Not found", { status: 404 });
 
   const [{ total }, pct] = await Promise.all([stoneCount(g.id), heavierThan(g.hours ?? 0)]);
-  const faces = await fonts();
-  const bold = faces.get(600);
-  const book = faces.get(400);
+  const faces = faceList(await ogFonts());
+  /* satori throws with an empty font list, and a throw here is a 500 served to
+     whatever is unfurling the link. Better a text unfurl than a broken one. */
+  if (faces.length === 0) return new Response("Not found", { status: 404 });
 
   const people = g.people ?? 1;
   const h = bigHours(g.hours ?? 0, people);
@@ -66,7 +45,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
       <div
         style={{
           width: 1200, height: 630, display: "flex", padding: 26,
-          background: "#0e1013", fontFamily: "Book",
+          background: "#0e1013", fontFamily: "Inter Tight",
         }}
       >
         <div
@@ -85,7 +64,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
             {line(g.outcome.toUpperCase(), "#6d7075", 20)}
             <div
               style={{
-                display: "flex", marginTop: 14, fontFamily: "Bold",
+                display: "flex", marginTop: 14, fontFamily: "Inter Tight", fontWeight: 600,
                 fontSize: g.feature.length > 42 ? 50 : 64, lineHeight: 1.08, color: "#e8e6e1",
               }}
             >
@@ -93,7 +72,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
             </div>
 
             <div style={{ display: "flex", alignItems: "baseline", marginTop: 30 }}>
-              <div style={{ display: "flex", fontSize: 84, fontFamily: "Bold", color: "#8fae9b" }}>{h.n}</div>
+              <div style={{ display: "flex", fontSize: 84, fontFamily: "Inter Tight", fontWeight: 600, color: "#8fae9b" }}>{h.n}</div>
               <div style={{ display: "flex", fontSize: 30, color: "#9a9da3", marginLeft: 16 }}>{h.unit}</div>
             </div>
             {line(compare(g.hours ?? 0, people), "#6d7075", 24, 12)}
@@ -113,10 +92,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
     {
       width: 1200,
       height: 630,
-      fonts: [
-        ...(bold ? [{ name: "Bold", data: bold, style: "normal" as const, weight: 600 as const }] : []),
-        ...(book ? [{ name: "Book", data: book, style: "normal" as const, weight: 400 as const }] : []),
-      ],
+      fonts: faces,
       headers: { "cache-control": "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400" },
     },
   );

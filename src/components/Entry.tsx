@@ -121,7 +121,7 @@ export function Entry({
           cheapest thing anybody will ever do on this site, and making them
           open the entry first cost most of them. */}
       <div className="mt-3">
-        <Stones graveId={e.id} initial={stones} hydrated={hydrated} compact />
+        <Stones graveId={e.id} initial={stones} hydrated={hydrated} managed compact />
       </div>
     </article>
   );

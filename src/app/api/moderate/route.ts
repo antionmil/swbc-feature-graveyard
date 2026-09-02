@@ -24,12 +24,23 @@ export async function POST(req: NextRequest) {
     return new NextResponse("bad request", { status: 400 });
   }
 
-  await db().update(schema.graves).set({ status: to }).where(eq(schema.graves.id, id));
+  const [row] = await db().update(schema.graves).set({ status: to })
+    .where(eq(schema.graves.id, id))
+    .returning({ slug: schema.graves.slug });
+  const slug = row?.slug ?? "";
   /* Without this an approval waits out the 60-second window before it shows,
      and the first thing you do after publishing is go and look at it.
      revalidatePath, not revalidateTag — Next 16 changed revalidateTag to
      require a cache-life profile, and guessing at profile names to save one
      call is not worth a runtime surprise. */
+  /* Every surface the row appears on, not just the wall. An approval used to
+     revalidate "/" alone, so the new entry was live on the home page while
+     /lessons, /heaviest and its own plot page kept serving the old copy for up
+     to their revalidate window. */
   revalidatePath("/");
+  revalidatePath("/lessons");
+  revalidatePath("/heaviest");
+  revalidatePath(`/g/${slug}`);
+  revalidatePath(`/g/${slug}/card`);
   return NextResponse.redirect(new URL(`/admin?k=${encodeURIComponent(k)}`, req.nextUrl.origin), 303);
 }

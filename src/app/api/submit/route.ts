@@ -61,9 +61,22 @@ export async function POST(req: NextRequest) {
   const hours = hoursOf(people, weeks, effort);
   const spend = body.spend === "" || body.spend == null ? null : clamp(body.spend, 0, 100_000_000, 0);
 
-  const image_url = typeof body.image_url === "string" && body.image_url.startsWith("https://")
-    ? body.image_url.slice(0, 500)
-    : null;
+  /* Only our own blob store. Any https:// URL used to be accepted and then
+     rendered in an <img> on the public wall, which makes this site a free
+     hotlink host, a tracking beacon for whoever supplied the URL, and a way to
+     put a picture we have never seen next to somebody else's confession. The
+     upload flow only ever produces *.public.blob.vercel-storage.com, so
+     anything else is not a screenshot somebody attached here. */
+  const image_url = (() => {
+    if (typeof body.image_url !== "string") return null;
+    try {
+      const u = new URL(body.image_url);
+      const ok = u.protocol === "https:" && /(^|\.)public\.blob\.vercel-storage\.com$/.test(u.hostname);
+      return ok ? u.toString().slice(0, 500) : null;
+    } catch {
+      return null;
+    }
+  })();
 
   try {
     const slug = newSlug();

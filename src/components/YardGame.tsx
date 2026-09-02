@@ -193,15 +193,32 @@ export function YardGame({ onExit }: { onExit: () => void }) {
   }, [started]);
 
   useEffect(() => {
+    /* The game listens on the window, so while it is open it was eating Space
+       and the arrow keys for the WHOLE page — you could not type a space into
+       the wall's search box, and the page would not scroll with the arrows.
+       Anything typed into a field or a button is not aimed at the game. */
+    const typing = (t: EventTarget | null) => {
+      const el = t as HTMLElement | null;
+      if (!el || !el.tagName) return false;
+      const tag = el.tagName.toLowerCase();
+      return tag === "input" || tag === "textarea" || tag === "select" || tag === "button"
+        || el.isContentEditable === true;
+    };
     const down = (e: KeyboardEvent) => {
+      if (typing(e.target)) return;
       keys.current[e.code] = true;
       if (e.code === "Space" || e.code === "ArrowUp" || e.code === "KeyW") { e.preventDefault(); jump(); }
       if (e.code === "ArrowLeft" || e.code === "ArrowRight") e.preventDefault();
       if (e.code === "Escape") onExit();
     };
     const up = (e: KeyboardEvent) => { keys.current[e.code] = false; };
-    addEventListener("keydown", down); addEventListener("keyup", up);
-    return () => { removeEventListener("keydown", down); removeEventListener("keyup", up); };
+    /* A key held when focus leaves the page would otherwise stay held forever. */
+    const blur = () => { keys.current = {}; };
+    addEventListener("keydown", down); addEventListener("keyup", up); addEventListener("blur", blur);
+    return () => {
+      removeEventListener("keydown", down); removeEventListener("keyup", up);
+      removeEventListener("blur", blur);
+    };
   }, [jump, onExit]);
 
   const hold = (code: string) => ({
