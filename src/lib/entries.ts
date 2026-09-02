@@ -1,6 +1,5 @@
 import "server-only";
 import { and, desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
-import { unstable_cache } from "next/cache";
 import { db, hasDb, schema } from "@/lib/db";
 
 export type Grave = typeof schema.graves.$inferSelect;
@@ -37,7 +36,26 @@ async function readWall(): Promise<Grave[]> {
  * so the whole thing is fetched once and the filter runs in the browser: the
  * page caches, and a chip click is instant instead of a navigation.
  */
-export const wall = unstable_cache(readWall, ["wall"], { revalidate: 60, tags: ["wall"] });
+/*
+ * There is no unstable_cache layer here any more, and that is deliberate.
+ *
+ * Every read used to sit behind `unstable_cache(..., { revalidate: 60, tags:
+ * ["wall"] })` UNDER a route that already had `export const revalidate = 60`.
+ * Two caches for one thing — and only the outer one could be cleared.
+ * `revalidatePath("/")` threw away the rendered page, the page re-rendered,
+ * called `wall()`, and got the same stale rows back out of the data cache. So a
+ * burial did not appear until the inner 60 seconds happened to lapse.
+ *
+ * The declared "wall" tag could not fix it: in Next 16 `revalidateTag` takes a
+ * cache-life profile as a second argument, so the one-argument calls this file
+ * was written for do not compile, and nothing ever invalidated that tag.
+ *
+ * What remains is route-level ISR alone. The pages are still static and still
+ * served from the edge; the only cost of dropping the shared layer is a few
+ * database queries per REGENERATION, which no visitor waits on.
+ */
+
+export const wall = readWall;
 
 /**
  * Every approved slug, for generateStaticParams.
@@ -65,14 +83,14 @@ async function readSlugs(): Promise<{ slug: string }[]> {
     return [];
   }
 }
-export const slugs = unstable_cache(readSlugs, ["slugs"], { revalidate: 60, tags: ["wall"] });
+export const slugs = readSlugs;
 
 /** Everything that carries a lesson, newest first. The reason to read a wall
  *  of failures, pulled out of the wall and given its own page. */
 async function readLessons(): Promise<Grave[]> {
   return (await wall()).filter((g) => (g.lesson ?? "").trim().length > 0);
 }
-export const lessons = unstable_cache(readLessons, ["lessons"], { revalidate: 60, tags: ["wall"] });
+export const lessons = readLessons;
 
 /** Counts per outcome, for the filter row. Derived from the rows already
  *  fetched rather than a second query — the wall is capped at 200. */
@@ -151,8 +169,7 @@ export function timeBuried(rows: Grave[]) {
 /** The heaviest tolls. Ranked on `hours`, which is stored rather than computed
  *  so this is one indexed read. Only approved entries — the ranking is a
  *  public statement about people, so nothing unreviewed goes in it. */
-export const heaviest = unstable_cache(
-  async (limit = 25): Promise<Grave[]> => {
+export const heaviest = async (limit = 25): Promise<Grave[]> => {
     if (!hasDb()) return [];
     try {
       return await db().select().from(schema.graves)
@@ -162,14 +179,10 @@ export const heaviest = unstable_cache(
       console.error("[heaviest] read failed", e);
       return [];
     }
-  },
-  ["heaviest"],
-  { revalidate: 60 },
-);
+  };
 
 /** Everything the graveyard has swallowed. The number that travels. */
-export const totals = unstable_cache(
-  async () => {
+export const totals = async () => {
     if (!hasDb()) return { graves: 0, hours: 0, spend: 0, weighed: 0 };
     try {
       const [r] = await db()
@@ -188,10 +201,7 @@ export const totals = unstable_cache(
       console.error("[totals] read failed", e);
       return { graves: 0, hours: 0, spend: 0, weighed: 0 };
     }
-  },
-  ["totals"],
-  { revalidate: 60 },
-);
+  };
 
 /** Where this burial sits against the rest. "Heavier than 73%" is the line
  *  someone screenshots; a raw rank is not. */
@@ -215,8 +225,7 @@ export async function heavierThan(hours: number) {
 /** Approved entries with no hour count. Their sources never said how long, and
  *  inventing a figure to fill a ranking is the one thing that would sink this.
  *  They are listed, plainly, under the ones that can be weighed. */
-export const unweighed = unstable_cache(
-  async (): Promise<Grave[]> => {
+export const unweighed = async (): Promise<Grave[]> => {
     if (!hasDb()) return [];
     try {
       return await db().select().from(schema.graves)
@@ -226,7 +235,4 @@ export const unweighed = unstable_cache(
       console.error("[unweighed] read failed", e);
       return [];
     }
-  },
-  ["unweighed"],
-  { revalidate: 60 },
-);
+  };
