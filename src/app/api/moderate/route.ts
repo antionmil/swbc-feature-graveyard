@@ -10,9 +10,12 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   const form = await req.formData();
   const k = String(form.get("k") ?? "");
-  const pass = process.env.ADMIN_PASSWORD;
+  /* Trimmed on both sides. A value pasted into a hosting dashboard routinely
+     carries a trailing space or newline, and the symptom is a password that
+     is definitely correct and definitely rejected. */
+  const pass = process.env.ADMIN_PASSWORD?.trim();
 
-  if (!pass || k !== pass) return new NextResponse("no", { status: 403 });
+  if (!pass || k.trim() !== pass) return new NextResponse("no", { status: 403 });
   if (!hasDb()) return new NextResponse("no database", { status: 503 });
 
   const id = Number(form.get("id"));

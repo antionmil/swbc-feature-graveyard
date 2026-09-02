@@ -13,9 +13,12 @@ export default async function Admin({
   searchParams: Promise<{ k?: string }>;
 }) {
   const { k } = await searchParams;
-  const pass = process.env.ADMIN_PASSWORD;
+  /* Trimmed on both sides. A value pasted into a hosting dashboard routinely
+     carries a trailing space or newline, and the symptom is a password that
+     is definitely correct and definitely rejected. */
+  const pass = process.env.ADMIN_PASSWORD?.trim();
 
-  if (!pass || k !== pass) {
+  if (!pass || k?.trim() !== pass) {
     return (
       <main className="mx-auto max-w-md px-5 py-24">
         <p className="text-body">
