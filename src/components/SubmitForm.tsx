@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { OTHER, OUTCOMES } from "@/lib/outcomes";
+import { MAX_OUTCOME, OTHER, OUTCOMES } from "@/lib/outcomes";
 
 export function SubmitForm() {
   const [startedAt] = useState(() => Date.now());
   const [outcome, setOutcome] = useState("");
+  const [custom, setCustom] = useState(0);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -107,14 +108,20 @@ export function SubmitForm() {
           {/* Only asked for once it is needed. A second empty box sitting there
               permanently makes the form look longer than it is. */}
           {outcome === OTHER && (
-            <input
-              name="outcome_other"
-              required
-              maxLength={32}
-              autoFocus
-              className={`${field} mt-1.5`}
-              placeholder="in a couple of words"
-            />
+            <>
+              <input
+                name="outcome_other"
+                required
+                maxLength={MAX_OUTCOME}
+                autoFocus
+                onChange={(e) => setCustom(e.target.value.length)}
+                className={`${field} mt-1.5`}
+                placeholder="in a couple of words"
+              />
+              <span className="text-xs text-faint">
+                {MAX_OUTCOME - custom} characters left — it becomes a filter tag
+              </span>
+            </>
           )}
         </label>
 

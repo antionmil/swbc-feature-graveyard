@@ -25,18 +25,20 @@ export function Wall({ rows }: { rows: Grave[] }) {
     );
   }
 
-  /* The count gets its own weight and spacing. Set flush against the label it
-     read as one run-on string — "shipped, unused 5" looked like a typo. */
+  /* Bordered pills made six wide boxes of different lengths, and the count
+     inside each one fought the label for the same line. This is a row of
+     words with the count set small and raised — the active one is marked by
+     an underline rather than a whole extra shape. */
   const chip = (active: boolean) =>
-    `inline-flex items-baseline gap-2 rounded-full border px-3.5 py-1.5 text-xs transition-colors ${
-      active ? "border-accent text-accent" : "border-rule text-muted hover:border-faint hover:text-body"
+    `group inline-flex items-start gap-1 border-b-2 pb-1 text-sm transition-colors ${
+      active ? "border-accent text-ink" : "border-transparent text-muted hover:text-body"
     }`;
   const num = (active: boolean) =>
-    `tabular-nums text-[11px] ${active ? "text-accent/70" : "text-faint"}`;
+    `text-[10px] leading-none tabular-nums ${active ? "text-accent" : "text-faint"}`;
 
   return (
     <>
-      <nav className="mt-9 flex flex-wrap gap-2" aria-label="Filter by outcome">
+      <nav className="mt-9 flex flex-wrap items-start gap-x-6 gap-y-3" aria-label="Filter by outcome">
         <button onClick={() => setPicked(null)} className={chip(!picked)}>
           <span>all</span>
           <span className={num(!picked)}>{rows.length}</span>

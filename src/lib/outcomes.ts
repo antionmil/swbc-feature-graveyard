@@ -23,6 +23,9 @@ export const OUTCOMES = [
  *  wrote rather than a bucket they were pushed into. */
 export const OTHER = "other";
 
+/** Hard cap on a self-written outcome. */
+export const MAX_OUTCOME = 20;
+
 export type Outcome = (typeof OUTCOMES)[number];
 export const isOutcome = (v: unknown): v is Outcome =>
   typeof v === "string" && (OUTCOMES as readonly string[]).includes(v);
@@ -32,7 +35,10 @@ export const isOutcome = (v: unknown): v is Outcome =>
 export function cleanOutcome(picked: unknown, custom: unknown): string | null {
   if (isOutcome(picked)) return picked;
   if (picked !== OTHER) return null;
-  const v = typeof custom === "string" ? custom.trim().toLowerCase().slice(0, 32) : "";
+  /* 20 characters. It sits inside a filter chip next to five other chips —
+     anything longer wraps the row and pushes the wall down the page. The
+     longest built-in, "shipped, unused", is 15. */
+  const v = typeof custom === "string" ? custom.trim().toLowerCase().slice(0, MAX_OUTCOME) : "";
   // Letters, spaces, commas and hyphens. A filter chip is not a place for markup.
-  return /^[a-z][a-z ,-]{1,31}$/.test(v) ? v : null;
+  return /^[a-z][a-z ,-]{1,19}$/.test(v) ? v : null;
 }
