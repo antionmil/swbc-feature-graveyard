@@ -8,12 +8,21 @@ import { YardGame } from "@/components/YardGame";
  *  It stays a plain decorative image for anyone who never clicks, and the
  *  game's code only loads into the page once — it is small enough not to
  *  warrant a dynamic import. */
-export function YardPlay({ className = "" }: { className?: string }) {
+export function YardPlay({
+  className = "",
+  playClassName = "",
+}: {
+  className?: string;
+  playClassName?: string;
+}) {
   const [playing, setPlaying] = useState(false);
 
+  /* The horizon is deliberately full-bleed, but the game has a score line and
+     controls that must sit inside the page gutter — inheriting the negative
+     margins pushed "leave" off the right edge of the screen. */
   if (playing) {
     return (
-      <div className={className}>
+      <div className={playClassName}>
         <YardGame onExit={() => setPlaying(false)} />
       </div>
     );

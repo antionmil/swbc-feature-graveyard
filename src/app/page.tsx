@@ -25,7 +25,7 @@ export default async function Home() {
       </div>
 
       {/* The horizon arrives before a word of copy does. */}
-      <YardPlay className="-mx-5 mt-4 mb-8 sm:-mx-6" />
+      <YardPlay className="-mx-5 mt-4 mb-8 sm:-mx-6" playClassName="mt-4 mb-8" />
 
       <header className="flex flex-col gap-5">
         <DigTitle
