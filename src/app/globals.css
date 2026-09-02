@@ -108,3 +108,11 @@ body { font-family: var(--font-body); }
   .ceremony .cy-shovel, .ceremony .cy-card { opacity: 0 }
   .ceremony .cy-stone { animation: none; opacity: 1 }
 }
+
+/* The horizon. Slow enough that you never catch it moving — which is the
+   point. Anything faster reads as a loading state. */
+@keyframes yard-drift { 0%,100% { transform: translateX(0) } 50% { transform: translateX(-6px) } }
+@keyframes yard-fog   { 0% { transform: translateX(-4%) } 100% { transform: translateX(4%) } }
+.yard-drift { animation: yard-drift 26s ease-in-out infinite }
+.yard-fog   { animation: yard-fog 34s ease-in-out infinite alternate }
+@media (prefers-reduced-motion: reduce) { .yard-drift, .yard-fog { animation: none } }

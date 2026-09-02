@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
-import { grave, stoneCount } from "@/lib/entries";
+import { grave, heavierThan, stoneCount } from "@/lib/entries";
 import { isSlug } from "@/lib/slug";
+import { bigHours, compare, registry } from "@/lib/toll";
 
 export const runtime = "nodejs";
 export const revalidate = 3600;
@@ -38,55 +39,68 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
 
   const g = await grave(slug);
   if (!g) return new Response("Not found", { status: 404 });
-  const { total } = await stoneCount(g.id);
 
+  const [{ total }, pct] = await Promise.all([stoneCount(g.id), heavierThan(g.hours ?? 0)]);
   const faces = await fonts();
   const bold = faces.get(600);
   const book = faces.get(400);
 
+  const people = g.people ?? 1;
+  const h = bigHours(g.hours ?? 0, people);
+  const line = (t: string, c: string, size: number, mt = 0) => (
+    <div style={{ display: "flex", fontSize: size, color: c, marginTop: mt }}>{t}</div>
+  );
+
+  /* A certificate, not a banner. The border, the rule under the header and the
+     registry number in the corner are doing the work — this is the thing that
+     lands in a Slack channel, and it has to look like a document somebody
+     filed rather than a marketing card. */
   return new ImageResponse(
     (
       <div
         style={{
-          width: 1200, height: 630, display: "flex", flexDirection: "column",
-          background: "#131417", padding: "70px 76px", fontFamily: "Book",
+          width: 1200, height: 630, display: "flex", padding: 26,
+          background: "#0e1013", fontFamily: "Book",
         }}
       >
-        <div style={{ display: "flex", fontSize: 22, letterSpacing: 4, color: "#6d7075", textTransform: "uppercase" }}>
-          Feature Graveyard
-        </div>
+        <div
+          style={{
+            display: "flex", flexDirection: "column", flexGrow: 1,
+            border: "2px solid #2b3138", borderRadius: 6, padding: "42px 52px",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            {line("CERTIFICATE OF DEATH", "#8fae9b", 22)}
+            {line(registry(g.id), "#565d66", 20)}
+          </div>
+          <div style={{ display: "flex", height: 2, background: "#2b3138", marginTop: 16 }} />
 
-        <div style={{ display: "flex", flexGrow: 1, flexDirection: "column", justifyContent: "center" }}>
-          <div style={{ display: "flex", fontSize: 20, letterSpacing: 3, color: "#8fae9b", textTransform: "uppercase" }}>
-            {g.outcome}
-            {g.time_spent ? `  ·  ${g.time_spent}` : ""}
-          </div>
-          <div
-            style={{
-              display: "flex", marginTop: 22, fontSize: g.feature.length > 44 ? 54 : 68,
-              lineHeight: 1.1, color: "#e8e6e1", fontFamily: "Bold",
-            }}
-          >
-            {g.feature}
-          </div>
-          <div style={{ display: "flex", marginTop: 26, maxWidth: 960, fontSize: 28, lineHeight: 1.45, color: "#9a9da3" }}>
-            {g.summary.length > 190 ? g.summary.slice(0, 187) + "…" : g.summary}
-          </div>
-        </div>
+          <div style={{ display: "flex", flexGrow: 1, flexDirection: "column", justifyContent: "center" }}>
+            {line(g.outcome.toUpperCase(), "#6d7075", 20)}
+            <div
+              style={{
+                display: "flex", marginTop: 14, fontFamily: "Bold",
+                fontSize: g.feature.length > 42 ? 50 : 64, lineHeight: 1.08, color: "#e8e6e1",
+              }}
+            >
+              {g.feature.length > 84 ? g.feature.slice(0, 81) + "…" : g.feature}
+            </div>
 
-        <div style={{ display: "flex", alignItems: "center", fontSize: 22, color: "#5d646d" }}>
-          <div style={{ display: "flex", alignItems: "flex-end", marginRight: 14 }}>
-            {Array.from({ length: Math.min(4, Math.max(1, total)) }, (_, i) => (
-              <div
-                key={i}
-                style={{
-                  width: 14 + ((i * 3) % 6), height: 10 + ((i * 2) % 4),
-                  borderRadius: 8, background: "#5d646d", marginRight: 5,
-                }}
-              />
-            ))}
+            <div style={{ display: "flex", alignItems: "baseline", marginTop: 30 }}>
+              <div style={{ display: "flex", fontSize: 84, fontFamily: "Bold", color: "#8fae9b" }}>{h.n}</div>
+              <div style={{ display: "flex", fontSize: 30, color: "#9a9da3", marginLeft: 16 }}>{h.unit}</div>
+            </div>
+            {line(compare(g.hours ?? 0, people), "#6d7075", 24, 12)}
           </div>
-          {total} {total === 1 ? "stone" : "stones"}  ·  featuregraveyard.onedaybuilt.com
+
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", fontSize: 21, color: "#565d66" }}>
+            <div style={{ display: "flex" }}>
+              {total} {total === 1 ? "stone" : "stones"}
+              {g.spend ? `  ·  $${g.spend.toLocaleString()} spent` : ""}
+              {pct !== null ? `  ·  heavier than ${pct}%` : ""}
+            </div>
+            {line("featuregraveyard.onedaybuilt.com", "#454b53", 21)}
+          </div>
         </div>
       </div>
     ),

@@ -30,7 +30,7 @@ export function Wall({ rows }: { rows: Grave[] }) {
     return (
       <p className="mt-8 text-body">
         Nothing buried yet.{" "}
-        <a href="#submit" className="text-accent underline underline-offset-4">
+        <a href="/bury" className="text-accent underline underline-offset-4">
           Yours would be the first.
         </a>
       </p>

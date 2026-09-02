@@ -1,5 +1,5 @@
 import "server-only";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { db, hasDb, schema } from "@/lib/db";
 
@@ -104,4 +104,65 @@ export function timeBuried(rows: Grave[]) {
     counted++;
   }
   return { days, counted, unknown: rows.length - counted };
+}
+
+/** The heaviest tolls. Ranked on `hours`, which is stored rather than computed
+ *  so this is one indexed read. Only approved entries — the ranking is a
+ *  public statement about people, so nothing unreviewed goes in it. */
+export const heaviest = unstable_cache(
+  async (limit = 25): Promise<Grave[]> => {
+    if (!hasDb()) return [];
+    try {
+      return await db().select().from(schema.graves)
+        .where(and(eq(schema.graves.status, "approved"), isNotNull(schema.graves.hours)))
+        .orderBy(desc(schema.graves.hours)).limit(limit);
+    } catch (e) {
+      console.error("[heaviest] read failed", e);
+      return [];
+    }
+  },
+  ["heaviest"],
+  { revalidate: 60 },
+);
+
+/** Everything the graveyard has swallowed. The number that travels. */
+export const totals = unstable_cache(
+  async () => {
+    if (!hasDb()) return { graves: 0, hours: 0, spend: 0 };
+    try {
+      const [r] = await db()
+        .select({
+          graves: sql<number>`count(*)::int`,
+          hours: sql<number>`coalesce(sum(hours),0)::int`,
+          spend: sql<number>`coalesce(sum(spend),0)::int`,
+        })
+        .from(schema.graves)
+        .where(eq(schema.graves.status, "approved"));
+      return r ?? { graves: 0, hours: 0, spend: 0 };
+    } catch (e) {
+      console.error("[totals] read failed", e);
+      return { graves: 0, hours: 0, spend: 0 };
+    }
+  },
+  ["totals"],
+  { revalidate: 60 },
+);
+
+/** Where this burial sits against the rest. "Heavier than 73%" is the line
+ *  someone screenshots; a raw rank is not. */
+export async function heavierThan(hours: number) {
+  if (!hasDb() || !hours) return null;
+  try {
+    const [r] = await db()
+      .select({
+        below: sql<number>`count(*) filter (where hours < ${hours})::int`,
+        all: sql<number>`count(*)::int`,
+      })
+      .from(schema.graves)
+      .where(and(eq(schema.graves.status, "approved"), isNotNull(schema.graves.hours)));
+    if (!r || r.all < 5) return null; // a percentage of four things is theatre
+    return Math.round((r.below / r.all) * 100);
+  } catch {
+    return null;
+  }
 }
