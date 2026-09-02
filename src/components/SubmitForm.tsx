@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { upload } from "@vercel/blob/client";
 import { MAX_OUTCOME, OTHER, OUTCOMES } from "@/lib/outcomes";
 
 export function SubmitForm() {
@@ -11,6 +12,32 @@ export function SubmitForm() {
   const [err, setErr] = useState<string | null>(null);
   const [slug, setSlug] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [shot, setShot] = useState<{ name: string; url: string } | null>(null);
+  const [shooting, setShooting] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  async function pickShot(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (f.size > 5 * 1024 * 1024) {
+      setErr("That image is over 5 MB. A screenshot should be well under it.");
+      e.target.value = "";
+      return;
+    }
+    setShooting(true);
+    setErr(null);
+    try {
+      /* Straight to storage, not through our API — a serverless body is capped
+         near 4.5 MB and a phone screenshot clears that easily. */
+      const b = await upload(f.name, f, { access: "public", handleUploadUrl: "/api/upload" });
+      setShot({ name: f.name, url: b.url });
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "That image did not upload.");
+      if (fileRef.current) fileRef.current.value = "";
+    } finally {
+      setShooting(false);
+    }
+  }
 
   async function send(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -28,6 +55,8 @@ export function SubmitForm() {
           outcome_other: f.get("outcome_other"),
           time_spent: f.get("time_spent"),
           author: f.get("author"),
+          author_url: f.get("author_url"),
+          image_url: shot?.url ?? null,
           trap: f.get("website"), // honeypot
           startedAt,
         }),
@@ -150,15 +179,64 @@ export function SubmitForm() {
         </label>
       </div>
 
+      <div className="flex flex-col gap-1.5">
+        <span className="text-xs tracking-[0.1em] text-muted uppercase">
+          A screenshot · optional
+        </span>
+        {shot ? (
+          <div className="flex items-center gap-3 rounded-lg border border-rule bg-surface px-4 py-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={shot.url} alt="" className="h-12 w-12 rounded object-cover" />
+            <span className="min-w-0 flex-1 truncate text-sm text-body">{shot.name}</span>
+            <button
+              type="button"
+              onClick={() => {
+                setShot(null);
+                if (fileRef.current) fileRef.current.value = "";
+              }}
+              className="text-sm text-muted underline underline-offset-4 hover:text-ink"
+            >
+              remove
+            </button>
+          </div>
+        ) : (
+          <>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              onChange={pickShot}
+              disabled={shooting}
+              className="w-full rounded-lg border border-rule bg-surface px-4 py-3 text-sm text-body file:mr-3 file:rounded-full file:border-0 file:bg-rule file:px-3 file:py-1.5 file:text-xs file:text-body"
+            />
+            <span className="text-xs text-faint">
+              {shooting ? "uploading…" : "PNG, JPEG, WebP or GIF, up to 5 MB. Seeing the thing beats reading about it."}
+            </span>
+          </>
+        )}
+      </div>
+
       <label className="flex flex-col gap-1.5">
         <span className="text-xs tracking-[0.1em] text-muted uppercase">Your name · optional</span>
         <input name="author" maxLength={60} className={field} placeholder="leave blank to stay anonymous" />
       </label>
 
+      <label className="flex flex-col gap-1.5">
+        <span className="text-xs tracking-[0.1em] text-muted uppercase">
+          Where to find you · optional
+        </span>
+        <input
+          name="author_url"
+          maxLength={120}
+          className={field}
+          placeholder="github.com/you, or x.com/you"
+        />
+      </label>
+
       {err && <p className="text-sm text-accent">{err}</p>}
 
       <button
-        disabled={busy}
+        disabled={busy || shooting}
         className="self-start rounded-full bg-accent px-7 py-3 text-sm font-medium tracking-[0.06em] text-ground disabled:opacity-40"
       >
         {busy ? "Burying…" : "Bury it"}

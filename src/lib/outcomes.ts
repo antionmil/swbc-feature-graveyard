@@ -42,3 +42,35 @@ export function cleanOutcome(picked: unknown, custom: unknown): string | null {
   // Letters, spaces, commas and hyphens. A filter chip is not a place for markup.
   return /^[a-z][a-z ,-]{1,19}$/.test(v) ? v : null;
 }
+
+/**
+ * Where to find the person, normalised.
+ *
+ * Only hosts we recognise, and only rebuilt from the handle we parse out —
+ * never the string as typed. Rendering an arbitrary URL somebody submits
+ * points our own readers at whatever they chose, which is a link-spam and
+ * phishing vector on a page that invites strangers to post.
+ */
+const HOSTS: Record<string, string> = {
+  "github.com": "github.com",
+  "x.com": "x.com",
+  "twitter.com": "x.com",
+  "bsky.app": "bsky.app",
+  "linkedin.com": "linkedin.com",
+};
+
+export function authorLink(raw: unknown): { url: string; label: string } | null {
+  if (typeof raw !== "string" || !raw.trim()) return null;
+  let v = raw.trim().replace(/^@/, "");
+  if (!/^https?:\/\//.test(v)) v = "https://" + v;
+  try {
+    const u = new URL(v);
+    const host = HOSTS[u.hostname.replace(/^www\./, "")];
+    if (!host) return null;
+    const handle = u.pathname.split("/").filter(Boolean)[0];
+    if (!handle || !/^[\w.-]{1,39}$/.test(handle)) return null;
+    return { url: `https://${host}/${handle}`, label: `${host.replace(/\.\w+$/, "")}/${handle}` };
+  } catch {
+    return null;
+  }
+}

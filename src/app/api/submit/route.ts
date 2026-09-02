@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { db, hasDb, schema } from "@/lib/db";
-import { cleanOutcome } from "@/lib/outcomes";
+import { authorLink, cleanOutcome } from "@/lib/outcomes";
 import { newSlug } from "@/lib/slug";
 import { checkGate, looksLikeBot } from "@/lib/ratelimit";
 
@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
   const outcome = cleanOutcome(body.outcome, body.outcome_other);
   const time_spent = trim(body.time_spent, 40) || null;
   const author = trim(body.author, 60) || null;
+  const author_url = authorLink(body.author_url)?.url ?? null;
 
   /* Checked here, not only in the browser. The form is the polite path; this
      is the one that holds. */
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
   try {
     const slug = newSlug();
     await db().insert(schema.graves).values({
-      feature, summary, outcome, time_spent, author, image_url, slug,
+      feature, summary, outcome, time_spent, author, author_url, image_url, slug,
       seeded: false,
       status: "pending", // nothing reaches the wall unread
     });

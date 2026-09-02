@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Stones } from "@/components/Stones";
 import { grave, stoneCount } from "@/lib/entries";
+import { authorLink } from "@/lib/outcomes";
 import { isSlug } from "@/lib/slug";
 
 export const revalidate = 60;
@@ -89,7 +90,21 @@ export default async function Grave({ params }: { params: Promise<{ slug: string
           </p>
         )}
         {!g.seeded && g.author && (
-          <p className="mt-6 text-xs text-muted">Buried by {g.author}.</p>
+          <p className="mt-6 text-xs text-muted">
+            Buried by{" "}
+            {authorLink(g.author_url) ? (
+              <a
+                href={authorLink(g.author_url)!.url}
+                rel="noopener nofollow"
+                className="text-body underline underline-offset-4 hover:text-accent"
+              >
+                {g.author}
+              </a>
+            ) : (
+              <span className="text-body">{g.author}</span>
+            )}
+            .
+          </p>
         )}
       </article>
 

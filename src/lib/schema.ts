@@ -19,6 +19,7 @@ export const graves = pgTable("graves", {
   outcome: text("outcome").notNull(),        // abandoned | unused | no demand | ...
   time_spent: text("time_spent"),            // free text, often null
   author: text("author"),                    // optional, how they want to be credited
+  author_url: text("author_url"),            // optional, normalised to a known host
 
   // Attribution for seeded entries. The summaries are written fresh in neutral
   // voice — the original words are never reproduced, the thread is linked.

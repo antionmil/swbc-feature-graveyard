@@ -1,3 +1,4 @@
+import { authorLink } from "@/lib/outcomes";
 import type { Grave } from "@/lib/entries";
 
 /**
@@ -21,6 +22,20 @@ export function Entry({ e, i = 0 }: { e: Grave; i?: number }) {
 
       <p className="prose-tight mt-1.5 leading-relaxed text-body">{e.summary}</p>
 
+      {/* A screenshot of the thing beats a paragraph about it. Capped in
+          height so one tall phone screenshot cannot own the whole feed. */}
+      {e.image_url && (
+        <a href={`/g/${e.slug}`} className="mt-3 block">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={e.image_url}
+            alt={`A screenshot of ${e.feature}`}
+            loading="lazy"
+            className="max-h-64 w-full rounded-lg border border-rule object-cover object-top"
+          />
+        </a>
+      )}
+
       <p className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
         <span className="text-faint">{e.outcome}</span>
         {/* Only rendered when it exists. A dash or a "—" in this slot invites
@@ -34,7 +49,17 @@ export function Entry({ e, i = 0 }: { e: Grave; i?: number }) {
         {e.author && (
           <>
             <span aria-hidden>·</span>
-            <span>{e.author}</span>
+            {authorLink(e.author_url) ? (
+              <a
+                href={authorLink(e.author_url)!.url}
+                rel="noopener nofollow"
+                className="text-body underline underline-offset-4 hover:text-accent"
+              >
+                {e.author}
+              </a>
+            ) : (
+              <span className="text-body">{e.author}</span>
+            )}
           </>
         )}
         {e.seeded && e.source_url && (
