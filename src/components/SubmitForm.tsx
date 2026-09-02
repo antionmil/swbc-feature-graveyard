@@ -6,7 +6,7 @@ import { MAX_OUTCOME, OTHER, OUTCOMES } from "@/lib/outcomes";
 import { Ceremony } from "@/components/Ceremony";
 import { EFFORTS, hoursOf } from "@/lib/toll";
 
-export function SubmitForm() {
+export function SubmitForm({ canUpload = false }: { canUpload?: boolean }) {
   const [startedAt] = useState(() => Date.now());
   const [outcome, setOutcome] = useState("");
   const [custom, setCustom] = useState(0);
@@ -299,6 +299,7 @@ export function SubmitForm() {
 
       </div>
 
+      {canUpload && (
       <div className="flex flex-col gap-1.5">
         <span id="shot-label" className="text-xs tracking-[0.1em] text-muted uppercase">
           A screenshot · optional
@@ -336,6 +337,7 @@ export function SubmitForm() {
           </>
         )}
       </div>
+      )}
 
       <label className="flex flex-col gap-1.5">
         <span className="text-xs tracking-[0.1em] text-muted uppercase">Your name · optional</span>

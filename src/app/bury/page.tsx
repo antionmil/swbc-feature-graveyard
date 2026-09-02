@@ -26,7 +26,13 @@ export default function Bury() {
       </header>
 
       <div className="mt-9">
-        <SubmitForm />
+        {/* The screenshot field only appears if the blob store is actually
+            wired. Without the token every visitor who picked a file got a raw
+            SDK error on the page, under a line promising "PNG, JPEG, WebP or
+            GIF, up to 5 MB" — the one media feature on the site, visibly broken
+            for everyone. Offering it conditionally is better than offering it
+            and failing. */}
+        <SubmitForm canUpload={Boolean(process.env.BLOB_READ_WRITE_TOKEN)} />
       </div>
     </main>
   );
