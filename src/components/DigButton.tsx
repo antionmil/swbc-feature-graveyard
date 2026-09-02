@@ -41,13 +41,13 @@ export function DigButton({ href, children }: { href: string; children: React.Re
     ctx.scale(dpr, dpr);
 
     // Thrown from where the spade bites, not from the middle of the button.
-    const ox = 30;
-    const oy = r.height + 46;
+    const ox = r.width / 2;
+    const oy = r.height + 40;
     const clods: Clod[] = Array.from({ length: 34 }, () => {
       const a = -Math.PI / 2 + (Math.random() - 0.45) * 1.5;
       const sp = 2.2 + Math.random() * 5.2;
       return {
-        x: ox + (Math.random() - 0.5) * 16,
+        x: ox + (Math.random() - 0.5) * r.width * 0.8,
         y: oy,
         vx: Math.cos(a) * sp * 1.5,
         vy: Math.sin(a) * sp,
@@ -95,8 +95,11 @@ export function DigButton({ href, children }: { href: string; children: React.Re
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     setDigging(true);
     router.prefetch(href);
-    if (!reduce) spray();
-    setTimeout(() => router.push(href), reduce ? 0 : 760);
+    if (!reduce) {
+      // The hole opens for 340ms; the dirt flies as it breaks, not on the click.
+      setTimeout(spray, 90);
+    }
+    setTimeout(() => router.push(href), reduce ? 0 : 980);
   }
 
   return (

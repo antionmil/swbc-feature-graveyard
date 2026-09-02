@@ -16,15 +16,15 @@ export default async function Home() {
 
   return (
     <main id="top" className="mx-auto w-full max-w-2xl px-5 pb-14 sm:px-6 sm:pb-20">
-      <div className="flex items-center gap-4 pt-8">
-        <div className="min-w-0 flex-1">
-          <LiveCount />
-        </div>
+      {/* One row. The pill was centred inside a flex-1 box, so it never lined
+          up with the button beside it. */}
+      <div className="flex items-center justify-between gap-3 pt-6">
+        <LiveCount />
         <ThemeToggle />
       </div>
 
       {/* The horizon arrives before a word of copy does. */}
-      <Yard className="-mx-5 mt-6 mb-14 opacity-90 sm:-mx-6" zombies />
+      <Yard className="-mx-5 mt-4 mb-8 opacity-95 sm:-mx-6" zombies />
 
       <header className="flex flex-col gap-5">
         <DigTitle

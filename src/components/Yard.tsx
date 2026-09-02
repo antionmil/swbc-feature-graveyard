@@ -27,18 +27,38 @@ function Zombie({ delay, dur, scale, y }: { delay: number; dur: number; scale: n
     <g
       className="yard-walk"
       style={{ animationDuration: `${dur}s`, animationDelay: `${delay}s` }}
-      opacity={0.45}
+      opacity={0.6}
     >
       <g transform={`translate(0 ${y}) scale(${scale})`}>
         <g className="yard-bob">
-          <ellipse cx="0" cy="-19" rx="2.6" ry="3" className="yard-figure" />
-          <path d="M-2.4 -16 h4.8 v9 h-4.8 Z" className="yard-figure" />
+          <ellipse cx="0" cy="-19" rx="2.6" ry="3" className="yard-zombie" />
+          <path d="M-2.4 -16 h4.8 v9 h-4.8 Z" className="yard-zombie" />
           {/* arms out in front, the only bit of the pose that says zombie */}
-          <path d="M2 -14 l6 1.6" className="yard-figure-s" strokeWidth="1.7" strokeLinecap="round" />
-          <path d="M-2 -14 l5.4 2.6" className="yard-figure-s" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="M2 -14 l6 1.6" className="yard-zombie-s" strokeWidth="1.7" strokeLinecap="round" />
+          <path d="M-2 -14 l5.4 2.6" className="yard-zombie-s" strokeWidth="1.5" strokeLinecap="round" />
         </g>
         <path className="yard-leg-a yard-figure-s" d="M-1 -7 v7" strokeWidth="1.8" strokeLinecap="round" />
         <path className="yard-leg-b yard-figure-s" d="M1 -7 v7" strokeWidth="1.8" strokeLinecap="round" />
+      </g>
+    </g>
+  );
+}
+
+/** A ghost drifts rather than walks, higher up and slower, with a tail that
+ *  wavers. It has no legs on purpose — that is most of what separates it from
+ *  the zombies at this size. */
+function Ghost({ delay, dur, scale, y }: { delay: number; dur: number; scale: number; y: number }) {
+  return (
+    <g className="yard-walk" style={{ animationDuration: `${dur}s`, animationDelay: `${delay}s` }} opacity={0.34}>
+      <g transform={`translate(0 ${y}) scale(${scale})`}>
+        <g className="yard-float">
+          <path
+            className="yard-ghost"
+            d="M-5 0 v-7 a5 5 0 0 1 10 0 v7 l-2.5 -2.5 l-2.5 2.5 l-2.5 -2.5 Z"
+          />
+          <circle className="yard-ghost-eye" cx="-1.8" cy="-6.5" r="0.9" />
+          <circle className="yard-ghost-eye" cx="1.8" cy="-6.5" r="0.9" />
+        </g>
       </g>
     </g>
   );
@@ -64,6 +84,8 @@ export function Yard({ className = "", zombies = false }: { className?: string; 
             <Zombie delay={0} dur={54} scale={1} y={66} />
             <Zombie delay={-22} dur={68} scale={0.78} y={69} />
             <Zombie delay={-41} dur={61} scale={0.9} y={64} />
+            <Ghost delay={-8} dur={44} scale={1} y={40} />
+            <Ghost delay={-30} dur={57} scale={0.72} y={30} />
           </g>
         )}
         <g className="yard-fog">

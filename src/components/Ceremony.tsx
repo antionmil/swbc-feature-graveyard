@@ -79,8 +79,12 @@ export function Ceremony({ feature, outcome, hours, spend, id, slug, people, onD
 
   return (
     <div ref={box} className="flex flex-col gap-4">
+            {/* The viewBox is cropped to where the action actually is. The scene was
+          drawn on a 420x260 canvas but the digging, the stone and the mound all
+          sit in a band about 150 tall — the rest was empty sky above and dead
+          soil below, which is why the frame felt oversized for its contents. */}
       <div className="ceremony relative overflow-hidden rounded-xl bg-[#0d0f12]">
-        <svg viewBox="0 0 420 260" className="block w-full">
+        <svg viewBox="30 96 360 150" className="block w-full">
           <defs>
             <radialGradient id="cySky" cx="50%" cy="12%" r="90%">
               <stop offset="0" stopColor="#1e242d" />
