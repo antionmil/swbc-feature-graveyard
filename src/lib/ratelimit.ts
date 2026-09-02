@@ -13,8 +13,9 @@ function positive(raw: string | undefined, fallback: number) {
 /* No per-person daily cap on burials. There was one — three a day — and it
    turned a first-time visitor away with "you have already sent a few today",
    which is the worst possible first impression and was wrong besides. Writing
-   a burial costs a row, not money, and nothing reaches the wall unread, so the
-   thing a cap was protecting against is already handled by moderation.
+   a burial costs a row, not money. Burials are live on submit now, so there is
+   no queue to flood either — what a flood would cost is rows, and the ceiling
+   below caps that.
 
    What stays is the global daily ceiling, which is not a limit on a person but
    a backstop against a runaway script turning into a bill, and the honeypot,

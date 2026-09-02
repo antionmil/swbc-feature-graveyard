@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse, type NextRequest } from "next/server";
 import { eq } from "drizzle-orm";
 import { db, hasDb, schema } from "@/lib/db";
@@ -85,11 +86,20 @@ export async function POST(req: NextRequest) {
       time_spent: weeks >= 52 ? `${(weeks / 52).toFixed(1)} years` : `${weeks} weeks`,
       people, weeks, effort, hours, spend,
       seeded: false,
-      status: "pending", // nothing reaches the wall unread
+      status: "approved", // live on submit; the owner takes down, not lets through
     });
-    /* The slug goes back immediately, before moderation. The plot is theirs
-       from the moment they bury — that is the whole point of route two. The
-       page itself says it is awaiting review. */
+    /* Live immediately. There is no queue: the owner's job is to take
+       something down, not to let it through.
+
+       This revalidation is the point. The wall is a cached page with a 60
+       second window, so without it a person who has just buried something goes
+       looking for it on the wall, does not find it, and concludes the site is
+       broken — which is exactly what happened the first time this was tried. */
+    revalidatePath("/");
+    revalidatePath("/lessons");
+    revalidatePath("/heaviest");
+    revalidatePath(`/g/${slug}`);
+
     const [row] = await db().select({ id: schema.graves.id })
       .from(schema.graves).where(eq(schema.graves.slug, slug)).limit(1);
     return NextResponse.json({ ok: true, slug, id: row?.id ?? null, hours });

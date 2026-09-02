@@ -1,12 +1,17 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, ne } from "drizzle-orm";
 import { db, hasDb, schema } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-/** Not auth — a moderation queue behind one env var. Do not build accounts
- *  for this. It is reachable only by someone who knows the password, and the
- *  worst case is that a stranger reads submissions that are about to be
- *  public anyway. */
+/**
+ * Not auth — one env var in front of a takedown tool. Do not build accounts.
+ *
+ * There is no review queue: a burial is public the moment somebody makes it.
+ * So this page is no longer about letting things through, it is about getting
+ * something OFF the wall quickly, which means it has to show the whole row —
+ * the lesson, the outbound link, the image, the hours — because those are the
+ * parts that would be a problem, and none of them are visible anywhere else.
+ */
 export default async function Admin({
   searchParams,
 }: {
@@ -35,50 +40,44 @@ export default async function Admin({
     );
   }
 
-  /* Pending is its own query. It used to take the newest 100 rows of ANY status
-     and filter in JavaScript, so approved and rejected rows ate the same 100
-     slots — past a hundred rows the oldest waiting submissions fell out of the
-     result and could not be reached by any control on the page, while their
-     plot page told the person it would appear "once it has been read". With no
-     per-visitor submission cap any more, a single burst gets there in one go. */
-  const pending = await db()
-    .select()
-    .from(schema.graves)
-    .where(eq(schema.graves.status, "pending"))
-    .orderBy(desc(schema.graves.created_at))
-    .limit(200);
-
-  const rest = await db()
+  const live = await db()
     .select()
     .from(schema.graves)
     .where(eq(schema.graves.status, "approved"))
     .orderBy(desc(schema.graves.created_at))
-    .limit(40);
+    .limit(60);
+
+  const down = await db()
+    .select()
+    .from(schema.graves)
+    .where(ne(schema.graves.status, "approved"))
+    .orderBy(desc(schema.graves.created_at))
+    .limit(60);
+
+  /* Seeded rows are the 22 imported entries. They are not what this page is
+     for, and burying them among real submissions is how you miss a real one. */
+  const own = live.filter((r) => !r.seeded);
+  const seeded = live.filter((r) => r.seeded);
 
   return (
     <main className="mx-auto w-full max-w-2xl px-5 py-14">
       <a href="/" className="text-sm text-muted underline underline-offset-4 hover:text-accent">
         ← The wall
       </a>
-      <h1 className="mt-4 text-2xl font-semibold">Queue</h1>
+      <h1 className="mt-4 text-2xl font-semibold">Live now</h1>
       <p className="mt-1 text-sm text-muted">
-        {pending.length}
-        {pending.length === 200 ? "+" : ""} waiting · newest first
+        {own.length} registered here · {seeded.length} seeded · {down.length} taken down.
+        Everything goes up on its own; this is where it comes back off.
       </p>
 
       <section className="mt-8 flex flex-col gap-6">
-        {pending.length === 0 && <p className="text-body">Nothing waiting.</p>}
-        {pending.map((r) => (
+        {own.length === 0 && (
+          <p className="text-body">Nobody has buried anything yet.</p>
+        )}
+        {own.map((r) => (
           <article key={r.id} className="rounded-xl border border-rule bg-surface p-5">
             <h2 className="font-medium text-ink">{r.feature}</h2>
             <p className="mt-1.5 leading-relaxed text-body">{r.summary}</p>
-
-            {/* Everything that gets published, not a third of it. The queue used
-                to show feature, summary, outcome, time and author only — so the
-                free-text lesson that goes out under a real name, the hours that
-                move a public total, the outbound link and the image were all
-                approved sight unseen. "Nothing reaches the wall unread" has to
-                mean the whole row. */}
             {r.lesson && (
               <p className="mt-3 border-l-2 border-accent/40 pl-3 text-sm leading-relaxed text-ink/80">
                 <span className="text-[10px] tracking-[0.2em] text-accent uppercase">Lesson </span>
@@ -101,26 +100,56 @@ export default async function Admin({
             <p className="mt-1 text-xs text-muted">
               {r.author ? `by ${r.author}` : "anonymous"}
               {r.author_url ? ` · ${r.author_url}` : ""}
-              {` · /g/${r.slug}`}
+              {" · "}
+              <a href={`/g/${r.slug}`} className="underline underline-offset-4 hover:text-accent">
+                /g/{r.slug}
+              </a>
             </p>
-            <div className="mt-4 flex gap-3">
-              <Decide id={r.id} to="approved" label="Publish" k={k!} primary />
-              <Decide id={r.id} to="rejected" label="Reject" k={k!} />
+            <div className="mt-4">
+              <Decide id={r.id} to="rejected" label="Take it down" k={k!} />
             </div>
           </article>
         ))}
       </section>
 
-      {rest.length > 0 && (
-        <section className="mt-12 flex flex-col gap-2 border-t border-rule pt-8">
-          {rest.map((r) => (
-            <p key={r.id} className="flex gap-3 text-sm">
-              <span className={r.status === "approved" ? "text-accent" : "text-faint"}>
-                {r.status === "approved" ? "live" : "no"}
-              </span>
-              <span className="truncate text-body">{r.feature}</span>
-            </p>
-          ))}
+      {down.length > 0 && (
+        <section className="mt-12 border-t border-rule pt-8">
+          <h2 className="text-lg font-semibold tracking-tight">Taken down</h2>
+          <p className="mt-1 text-sm text-muted">
+            These 404 for everyone, link or no link.
+          </p>
+          <div className="mt-5 flex flex-col gap-3">
+            {down.map((r) => (
+              <div key={r.id} className="flex items-center gap-3">
+                <span className="min-w-0 flex-1 truncate text-sm text-body">{r.feature}</span>
+                <Decide id={r.id} to="approved" label="Put it back" k={k!} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {seeded.length > 0 && (
+        <section className="mt-12 border-t border-rule pt-8">
+          <h2 className="text-lg font-semibold tracking-tight">Seeded</h2>
+          <p className="mt-1 text-sm text-muted">
+            The {seeded.length} gathered from public threads. Someone asking to be
+            removed lands here.
+          </p>
+          <div className="mt-5 flex flex-col gap-3">
+            {seeded.map((r) => (
+              <div key={r.id} className="flex items-center gap-3">
+                <a
+                  href={`/g/${r.slug}`}
+                  className="min-w-0 flex-1 truncate text-sm text-body underline underline-offset-4 hover:text-accent"
+                >
+                  {r.feature}
+                </a>
+                <span className="shrink-0 text-xs text-faint">{r.source_author}</span>
+                <Decide id={r.id} to="rejected" label="Take it down" k={k!} />
+              </div>
+            ))}
+          </div>
         </section>
       )}
     </main>
@@ -136,8 +165,8 @@ function Decide({
       <input type="hidden" name="to" value={to} />
       <input type="hidden" name="k" value={k} />
       <button
-        className={`rounded-full px-5 py-2 text-sm font-medium ${
-          primary ? "bg-accent text-ground" : "border border-rule text-muted hover:text-ink"
+        className={`rounded-full px-4 py-1.5 text-sm font-medium ${
+          primary ? "bg-accent text-ground" : "border border-edge text-muted hover:text-ink"
         }`}
       >
         {label}

@@ -82,8 +82,8 @@ export function tally(rows: Grave[]) {
   return m;
 }
 
-/** One grave, by its plot. Returns pending ones too — the person who buried it
- *  gets the link immediately, and the page tells them it is awaiting review. */
+/** One grave, by its plot. Returns whatever status the row has; the page is
+ *  what decides — a taken-down plot 404s there. */
 export async function grave(slug: string) {
   if (!hasDb()) return null;
   try {

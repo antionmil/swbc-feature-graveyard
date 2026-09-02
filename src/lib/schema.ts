@@ -62,7 +62,9 @@ export const graves = pgTable("graves", {
      submissions were rejected. */
   slug: text("slug").notNull().unique(),
 
-  status: text("status").notNull().default("pending"), // pending | approved | rejected
+  /* approved on arrival. There is no review queue: a burial is public the
+     moment it is made, and "rejected" is the owner taking one back down. */
+  status: text("status").notNull().default("approved"), // approved | rejected
   created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
   index("graves_status_idx").on(t.status, t.created_at),

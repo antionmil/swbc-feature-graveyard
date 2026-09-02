@@ -19,8 +19,11 @@ no demand, no traction, removed, replaced.
   make this a cost counter, and sixteen of the twenty-two seeded entries have no
   duration at all. `time_spent` is nullable TEXT — people say "about three
   weeks", not `3`.
-- **Nothing appears unread.** Submissions land as `pending`; the wall reads
-  only `approved`. Moderation is one page behind one env var — no accounts.
+- **Burials are live on submit.** There is no review queue: a submission is
+  `approved` on arrival and the wall is revalidated in the same request, so it
+  is there the moment it is made. `status` exists for the reverse — one page
+  behind one env var, where an entry is taken back down. A taken-down plot 404s
+  for everyone, link or no link.
 - **The filter runs in the browser.** Filtering server-side meant reading
   `searchParams`, which makes the page dynamic — a database query on every
   view, and Neon scales to zero after five minutes idle. The wall is capped at
@@ -51,6 +54,5 @@ Neon, free plan, Frankfurt — `vercel.json` pins the functions to `fra1` so
 the database and the functions sit in the same region. Supabase is not used here: its free plan allows only two
 active projects and a 26-site run needs more.
 
-Moderation queue: `/admin?k=<ADMIN_PASSWORD>`.
 
 Not affiliated with anyone whose thread is linked.

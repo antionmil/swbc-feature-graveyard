@@ -115,9 +115,8 @@ export function SubmitForm({ canUpload = false }: { canUpload?: boolean }) {
           needs to land — it unfurls with the whole story, which is the point.
         </p>
         <p className="prose-tight mt-2 text-sm text-muted">
-          It is <span className="text-ink">not on the wall yet</span>. Every
-          burial is read before it goes up — that is what keeps the wall worth
-          reading. Yours will appear there shortly.
+          It is <span className="text-ink">on the wall now</span>, at the top,
+          where the most recent burial goes.
         </p>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -374,7 +373,7 @@ export function SubmitForm({ canUpload = false }: { canUpload?: boolean }) {
       </button>
 
       <p className="prose-tight text-xs text-muted">
-        Read before it goes up. No account, no email, nothing stored about you
+        Goes up straight away. No account, no email, nothing stored about you
         beyond what you typed. Your browser keeps one random id so the site knows
         which stones are yours; it is not linked to you and it never identifies
         you to us.

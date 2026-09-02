@@ -33,14 +33,10 @@ export async function generateMetadata({
   const title = g.feature;
   const description = g.summary.slice(0, 180);
   const images = [{ url: `${SITE}/g/${slug}/card`, width: 1200, height: 630, alt: title }];
-  /* Unreviewed. The submitter keeps their link, but nothing about it goes into
-     an index or into a card that reads as though the site stands behind it. */
+  /* Taken down. No title, no description, no card — the page 404s below, and
+     the metadata must not outlive it in somebody's unfurl cache. */
   if (g.status !== "approved") {
-    return {
-      title: `${title} — awaiting review`,
-      description: "This burial has not been read yet.",
-      robots: { index: false, follow: false },
-    };
+    return { title: "Not found", robots: { index: false, follow: false } };
   }
 
   return {
@@ -57,6 +53,10 @@ export default async function Grave({ params }: { params: Promise<{ slug: string
 
   const g = await grave(slug);
   if (!g) notFound();
+  /* Burials are live the moment they are made, so the only way a plot is not
+     approved is that it was taken down. That has to actually remove it, link
+     or no link. */
+  if (g.status !== "approved") notFound();
 
   const { total } = await stoneCount(g.id);
 
@@ -66,14 +66,6 @@ export default async function Grave({ params }: { params: Promise<{ slug: string
         ← The graveyard
       </Link>
 
-      {g.status !== "approved" && (
-        <p className="mt-8 rounded-lg border border-rule bg-surface px-4 py-3 text-sm text-body">
-          <span className="text-ink">Not on the wall yet.</span> Every burial is
-          read before it goes up, so this one is waiting its turn. The plot is
-          yours either way and this link works now — it will not change when the
-          entry goes live.
-        </p>
-      )}
 
       <article className="mt-8">
         <p className="text-xs tracking-[0.16em] text-muted uppercase">
