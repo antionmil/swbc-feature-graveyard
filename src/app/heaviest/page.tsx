@@ -88,7 +88,10 @@ export default async function Heaviest() {
                         lines tall and the left was two, which left a hole
                         beside every row — and a ranked list of titles alone
                         tells you nothing about what any of them were. */}
-                    <span className="mt-1 line-clamp-2 block text-sm leading-snug text-body">
+                    {/* No `block` here. line-clamp sets display:-webkit-box, and `block`
+                        overrode it — the clamp silently did nothing and every row
+                        rendered its whole summary, 1900px tall. */}
+                    <span className="mt-1 line-clamp-2 text-sm leading-snug text-body">
                       {r.summary}
                     </span>
                     <span className="mt-1.5 block text-xs text-muted">

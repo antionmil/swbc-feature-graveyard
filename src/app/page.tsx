@@ -68,10 +68,18 @@ export default async function Home() {
                 <li key={r.id}>
                   <Link
                     href={`/g/${r.slug}`}
-                    className="flex items-baseline gap-4 border-b border-rule py-3 transition-colors hover:border-accent"
+                    className="flex items-start gap-4 border-b border-rule py-3 transition-colors hover:border-accent"
                   >
                     <span className="w-5 shrink-0 text-sm text-faint tabular-nums">{i + 1}</span>
-                    <span className="min-w-0 flex-1 truncate text-ink">{r.feature}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-ink">{r.feature}</span>
+                      {/* The figure beside this is two lines tall, so a single
+                          line of title left a hole in every row. */}
+                      <span className="block truncate text-xs text-muted">
+                        {r.outcome}
+                        {r.author ?? r.source_author ? ` · ${r.author ?? r.source_author}` : ""}
+                      </span>
+                    </span>
                     {/* Stacked, not strung out along the row. A fourth column
                         only fits on a wide screen, and hiding the money on a
                         phone hides the thing half of this list is about. */}

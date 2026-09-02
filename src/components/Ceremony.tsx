@@ -88,10 +88,9 @@ function wrap(text: string, budget: number) {
   return out;
 }
 
-/** One line of the inscription. The relief comes from the cyCut filter on the
- *  group above, not from stacked copies, so the glyphs are drawn exactly once. */
+/** One line of the inscription. Drawn exactly once. */
 function Carved({
-  y, size, fill = "#98a1ad", track, weight, children,
+  y, size, fill = "#1b2026", track, weight, children,
 }: {
   y: number; size: number; fill?: string; track?: number; weight?: number; children: string;
 }) {
@@ -268,42 +267,19 @@ export function Ceremony({ feature, author, hours, spend, id, slug, people, onDo
                 right, so the groove wall facing up-right is dark and the wall
                 facing down-left catches the light. Blurred, so it reads as
                 depth and never as a ghost. */}
-            {/* Two of them, because the offset that reads as a bevel on the
-                8-unit name is a tenth of an em on the 5-unit lines, and there
-                it blooms into a fuzz instead. */}
-            <filter id="cyCutSm" x="-14%" y="-14%" width="128%" height="128%">
-              <feOffset in="SourceAlpha" dx="0.3" dy="-0.3" result="upR" />
-              <feGaussianBlur in="upR" stdDeviation="0.2" result="upRb" />
-              <feFlood floodColor="#04060a" floodOpacity="0.9" result="darkInk" />
-              <feComposite in="darkInk" in2="upRb" operator="in" result="darkEdge" />
-              <feOffset in="SourceAlpha" dx="-0.26" dy="0.26" result="dnL" />
-              <feGaussianBlur in="dnL" stdDeviation="0.18" result="dnLb" />
-              <feFlood floodColor="#f4f7fb" floodOpacity="0.4" result="liteInk" />
-              <feComposite in="liteInk" in2="dnLb" operator="in" result="liteEdge" />
-              <feMerge>
-                <feMergeNode in="darkEdge" />
-                <feMergeNode in="liteEdge" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            <filter id="cyCut" x="-8%" y="-8%" width="116%" height="116%">
-              <feOffset in="SourceAlpha" dx="0.5" dy="-0.5" result="upR" />
-              <feGaussianBlur in="upR" stdDeviation="0.32" result="upRb" />
-              <feFlood floodColor="#04060a" floodOpacity="0.95" result="darkInk" />
-              <feComposite in="darkInk" in2="upRb" operator="in" result="darkEdge" />
-              <feOffset in="SourceAlpha" dx="-0.42" dy="0.42" result="dnL" />
-              <feGaussianBlur in="dnL" stdDeviation="0.3" result="dnLb" />
-              <feFlood floodColor="#f4f7fb" floodOpacity="0.55" result="liteInk" />
-              <feComposite in="liteInk" in2="dnLb" operator="in" result="liteEdge" />
-              <feMerge>
-                <feMergeNode in="darkEdge" />
-                <feMergeNode in="liteEdge" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            <linearGradient id="cyStoneFace" x1="0" y1="0" x2="0.4" y2="1">
-              <stop offset="0" stopColor="#454c56" />
-              <stop offset="1" stopColor="#2b3038" />
+            {/* No text filter and no offset copies. Depth comes from the PANEL,
+                which is a large shape where a one-unit bevel is proportionally
+                tiny and reads correctly — and the letters read as cut because
+                they are dark inside pale, moonlit granite, which is what an
+                inscription actually looks like at any distance. Faking relief
+                on the glyphs themselves only ever produced a doubled image. */}
+            <linearGradient id="cyStoneFace" x1="0" y1="0" x2="0.35" y2="1">
+              <stop offset="0" stopColor="#9ea7b1" />
+              <stop offset="1" stopColor="#79828e" />
+            </linearGradient>
+            <linearGradient id="cyPanelFace" x1="0" y1="0" x2="0.3" y2="1">
+              <stop offset="0" stopColor="#8b949e" />
+              <stop offset="1" stopColor="#79828d" />
             </linearGradient>
           </defs>
 
@@ -492,33 +468,36 @@ export function Ceremony({ feature, author, hours, spend, id, slug, people, onDo
             {/* The stone, rising through the mound. */}
             <g transform="translate(170,152)">
               <g className="cy-stone">
-                {/* Back slab, so the stone has an edge and not just an outline. */}
-                <path d="M-48 0 V-56 A90 90 0 0 1 48 -56 V0 Z" fill="#1a1f26" />
+                {/* the edge of the slab, so it has thickness */}
+                <path d="M-48 0 V-56 A90 90 0 0 1 48 -56 V0 Z" fill="#3f4750" />
                 <path d="M-45 -1 V-56 A87 87 0 0 1 45 -56 V-1 Z" fill="url(#cyStoneFace)" />
-                {/* The left edge, where the moon does not reach, and the ground line. */}
+                {/* the moon is up and to the right, so the left edge falls away */}
                 <path d="M-45 -1 V-56 A87 87 0 0 1 -26 -66.5 L-23 -63.4 A83 83 0 0 0 -40 -55 V-1 Z"
-                      fill="#69737f" opacity="0.4" />
-                <path d="M-45 -1 h90 v1.6 h-90 Z" fill="#0d1116" opacity="0.7" />
-                {/* The polished panel the inscription is cut into. */}
-                <path d="M-38 -4 V-54 A76 76 0 0 1 38 -54 V-4 Z" fill="#242a32" opacity="0.55" />
-                <path d="M-38 -4 V-54 A76 76 0 0 1 38 -54" fill="none" stroke="#0e1217" strokeWidth="0.7" opacity="0.65" />
+                      fill="#5f6874" opacity="0.55" />
+                <path d="M-45 -1 h90 v1.8 h-90 Z" fill="#2b323a" opacity="0.85" />
 
-                <g filter="url(#cyCutSm)">
-                  <Carved y={PANEL.header} size={PANEL.headerSize} track={PANEL.headerTrack} fill="#7d8794">
-                    HERE LIES
-                  </Carved>
-                  {ins.by ? (
-                    <Carved y={PANEL.byline} size={ins.bySize} fill="#7d8794">{ins.by}</Carved>
-                  ) : null}
-                  <Carved y={PANEL.registry} size={5} track={1.6} fill="#6f7885">{registry(id)}</Carved>
-                </g>
-                <g filter="url(#cyCut)">
+                {/* The polished panel, cut into the face. Its bevel is where the
+                    depth comes from: a lit lower-left lip, a shaded upper-right
+                    wall, on a shape big enough for one unit to read as an edge. */}
+                <path d="M-39 -3 V-54 A77 77 0 0 1 39 -54 V-3 Z" fill="#5c646e" />
+                <path d="M-38 -4 V-54 A76 76 0 0 1 38 -54 V-4 Z" fill="url(#cyPanelFace)" />
+                <path d="M-38 -4 V-54 A76 76 0 0 1 -20 -63.2 L-19 -61.6 A74.5 74.5 0 0 0 -36.6 -53.4 V-4 Z"
+                      fill="#aab3bd" opacity="0.55" />
+                <path d="M38 -4 V-54 A76 76 0 0 0 20 -63.2 L19 -61.6 A74.5 74.5 0 0 1 36.6 -53.4 V-4 Z"
+                      fill="#3d444d" opacity="0.5" />
+
+                <Carved y={PANEL.header} size={PANEL.headerSize} track={PANEL.headerTrack} fill="#333a43">
+                  HERE LIES
+                </Carved>
                 {ins.lines.map((l) => (
-                  <Carved key={l.y} y={l.y} size={ins.size} weight={500} fill="#a5aeba">
+                  <Carved key={l.y} y={l.y} size={ins.size} weight={600} fill="#1b2026">
                     {l.text}
                   </Carved>
                 ))}
-                </g>
+                {ins.by ? (
+                  <Carved y={PANEL.byline} size={ins.bySize} fill="#333a43">{ins.by}</Carved>
+                ) : null}
+                <Carved y={PANEL.registry} size={5} track={1.6} fill="#3a424b">{registry(id)}</Carved>
               </g>
             </g>
           </g>
