@@ -109,6 +109,8 @@ export default async function Lessons() {
         <Link href="/heaviest" className="underline underline-offset-4 hover:text-accent">Heaviest tolls</Link>
         <span aria-hidden>·</span>
         <Link href="/bury" className="underline underline-offset-4 hover:text-accent">Register a death</Link>
+        <span aria-hidden>·</span>
+        <a href="https://github.com/antionmil/swbc-feature-graveyard/issues/new?title=Please%20remove%20my%20entry" target="_blank" rel="noopener nofollow" className="underline underline-offset-4 hover:text-accent">Ask us to take something down</a>
       </footer>
     </main>
   );

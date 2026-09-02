@@ -135,6 +135,27 @@ export default async function Grave({ params }: { params: Promise<{ slug: string
             {g.source_date ? `, ${g.source_date.slice(0, 4)}` : ""}. Summarised here, not quoted.
           </p>
         )}
+
+        {g.seeded && (
+          <>
+        {/* The site names real people beside the thing they wrote about
+            failing. Some of them will not want that, and until now there was
+            no way for any of them to say so — which is the message the owner
+            would have received instead. */}
+        <p className="mt-2 text-xs text-faint">
+          Written by them, summarised by us, and linked back.{" "}
+          <a
+            href="https://github.com/antionmil/swbc-feature-graveyard/issues/new?title=Please%20remove%20my%20entry"
+            target="_blank"
+            rel="noopener nofollow"
+            className="underline underline-offset-4 hover:text-accent"
+          >
+            Ask us to take it down
+          </a>{" "}
+          and we will, no questions.
+        </p>
+          </>
+        )}
         {!g.seeded && g.author && (
           <p className="mt-6 text-xs text-muted">
             Buried by{" "}

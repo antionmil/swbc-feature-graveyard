@@ -151,6 +151,8 @@ export default async function Heaviest() {
         <Link href="/lessons" className="underline underline-offset-4 hover:text-accent">What we have learned</Link>
         <span aria-hidden>·</span>
         <Link href="/bury" className="underline underline-offset-4 hover:text-accent">Bury one of yours</Link>
+        <span aria-hidden>·</span>
+        <a href="https://github.com/antionmil/swbc-feature-graveyard/issues/new?title=Please%20remove%20my%20entry" target="_blank" rel="noopener nofollow" className="underline underline-offset-4 hover:text-accent">Ask us to take something down</a>
       </footer>
     </main>
   );
