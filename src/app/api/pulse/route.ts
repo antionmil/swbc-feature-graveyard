@@ -19,9 +19,14 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    /* One statement for the write AND all four numbers. Four separate queries
+    /* One statement for the write AND all four numbers — four separate queries
        would be four round trips on a 30-second heartbeat from every open tab,
-       and this runs on Neon's HTTP driver where each one is its own request. */
+       and Neon's HTTP driver makes each one its own request.
+       
+       The counts UNION this visitor in rather than reading the table alone.
+       Inside a single statement the sub-selects see the snapshot from BEFORE
+       the CTE's insert, so a first-time visitor was told there were zero
+       visitors and only saw 1 on their next ping. */
     const r = await db().execute(sql`
       with touch as (
         insert into visitors (sid) values (${sid})
@@ -35,10 +40,16 @@ export async function POST(req: NextRequest) {
         returning n
       )
       select
-        (select count(*) from visitors where last_seen > now() - interval '2 minutes')::int as online,
-        (select count(*) from visitors where last_seen > now() - interval '7 days')::int as week,
-        (select count(*) from visitors)::int as total,
-        coalesce((select n from counters where key = 'views'), 0)::int as views
+        (select count(*) from (
+           select sid from visitors where last_seen > now() - interval '2 minutes'
+           union select ${sid}) a)::int as online,
+        (select count(*) from (
+           select sid from visitors where last_seen > now() - interval '7 days'
+           union select ${sid}) b)::int as week,
+        (select count(*) from (
+           select sid from visitors union select ${sid}) c)::int as total,
+        (coalesce((select n from counters where key = 'views'), 0)
+           + case when ${view} then 1 else 0 end)::int as views
       from touch limit 1
     `);
     const rows = (r as unknown as { rows?: Record<string, number>[] }).rows ?? (r as unknown as Record<string, number>[]);
