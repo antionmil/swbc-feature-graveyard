@@ -1,0 +1,48 @@
+import { pgTable, text, integer, index, serial, boolean, timestamp } from "drizzle-orm/pg-core";
+
+/**
+ * One table for the wall.
+ *
+ * Seeded entries and submitted ones live together, distinguished by `seeded`,
+ * because the wall renders them identically and nothing downstream needs to
+ * tell them apart except the attribution line.
+ *
+ * `time_spent` is TEXT and nullable on purpose. People say "about three
+ * weeks", "four years", "two sprints" — a number would force a precision
+ * nobody has, and eleven of the thirteen seeds have no figure at all. An
+ * invented duration is the single thing that would sink this site.
+ */
+export const graves = pgTable("graves", {
+  id: serial("id").primaryKey(),
+  feature: text("feature").notNull(),        // what was built
+  summary: text("summary").notNull(),        // what happened to it
+  outcome: text("outcome").notNull(),        // abandoned | unused | no demand | ...
+  time_spent: text("time_spent"),            // free text, often null
+  author: text("author"),                    // optional, how they want to be credited
+
+  // Attribution for seeded entries. The summaries are written fresh in neutral
+  // voice — the original words are never reproduced, the thread is linked.
+  seeded: boolean("seeded").notNull().default(false),
+  source_url: text("source_url"),
+  source_site: text("source_site"),
+  source_author: text("source_author"),
+  source_date: text("source_date"),
+
+  status: text("status").notNull().default("pending"), // pending | approved | rejected
+  created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  index("graves_status_idx").on(t.status, t.created_at),
+  index("graves_outcome_idx").on(t.outcome),
+]);
+
+/** Rate-limit counters.
+ *  `bucket` is the PRIMARY KEY, not a plain column. That is load-bearing:
+ *  the counter is a single atomic INSERT .. ON CONFLICT DO UPDATE, and
+ *  without the uniqueness there is no conflict to catch, every call inserts
+ *  a fresh row, every count comes back as 1, and BOTH the per-IP limit and
+ *  the global daily ceiling silently never fire. */
+export const events = pgTable("events", {
+  bucket: text("bucket").primaryKey(),
+  n: integer("n").notNull().default(0),
+  day: text("day").notNull(),
+}, (t) => [index("events_day_idx").on(t.day)]);

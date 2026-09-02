@@ -1,0 +1,11 @@
+node_modules
+.next
+# Every env file, however it is named.
+.env*
+!.env.example
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+/public/artifacts/*
+!/public/artifacts/.gitkeep
+.next-build
