@@ -101,10 +101,11 @@ export default async function Grave({ params }: { params: Promise<{ slug: string
               </>
             ) : (
               <>
-                <span className="text-ink">{money(g).text}</span> in money —{" "}
-                <span className="text-faint">
-                  our estimate, not theirs: {g.spend_est_note}
-                </span>
+                Nobody said what it cost. Our estimate is{" "}
+                <span className="text-ink">{money(g).text}</span>
+                {g.spend_est_note ? (
+                  <span className="text-faint"> — {g.spend_est_note}</span>
+                ) : null}
               </>
             )}
           </p>
