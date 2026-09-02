@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { heaviest, totals } from "@/lib/entries";
+import { heaviest, totals, unweighed } from "@/lib/entries";
 import { bigHours, registry } from "@/lib/toll";
 
 export const revalidate = 60;
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Heaviest() {
-  const [rows, sum] = await Promise.all([heaviest(25), totals()]);
+  const [rows, sum, rest] = await Promise.all([heaviest(25), totals(), unweighed()]);
   const all = bigHours(sum.hours);
 
   return (
@@ -82,17 +82,41 @@ export default async function Heaviest() {
                     <span className="block text-[10px] tracking-[0.1em] text-faint uppercase">
                       {h.unit.replace(" of your life", "").replace("full-time ", "")}
                     </span>
-                    {r.spend ? (
-                      <span className="mt-0.5 block text-xs text-muted tabular-nums">
-                        ${r.spend.toLocaleString()}
-                      </span>
-                    ) : null}
+                    {/* Always a value. A blank column reads as a rendering
+                        fault, and "not said" is information. */}
+                    <span className="mt-0.5 block text-xs text-faint tabular-nums">
+                      {r.spend === null ? "not said" : `$${r.spend.toLocaleString()}`}
+                    </span>
                   </span>
                 </Link>
               </li>
             );
           })}
         </ol>
+      )}
+
+      {rest.length > 0 && (
+        <section className="mt-14 border-t border-rule pt-10">
+          <h2 className="text-lg font-semibold tracking-tight">Not weighed</h2>
+          <p className="prose-tight mt-1.5 max-w-prose text-sm text-body">
+            {rest.length} more, mostly gathered from public threads where the
+            person never said how long it took. They are not ranked, because a
+            figure invented to fill a table is worth nothing.
+          </p>
+          <ul className="mt-5 flex flex-col">
+            {rest.map((r) => (
+              <li key={r.id}>
+                <Link
+                  href={`/g/${r.slug}`}
+                  className="flex items-baseline gap-3 border-b border-rule py-3 transition-colors hover:border-accent"
+                >
+                  <span className="min-w-0 flex-1 truncate text-body">{r.feature}</span>
+                  <span className="shrink-0 text-xs text-faint">{r.outcome}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       <footer className="mt-14 border-t border-rule pt-8 text-xs text-muted">

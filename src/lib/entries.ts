@@ -1,5 +1,5 @@
 import "server-only";
-import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
+import { and, desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { db, hasDb, schema } from "@/lib/db";
 
@@ -169,3 +169,22 @@ export async function heavierThan(hours: number) {
     return null;
   }
 }
+
+/** Approved entries with no hour count. Their sources never said how long, and
+ *  inventing a figure to fill a ranking is the one thing that would sink this.
+ *  They are listed, plainly, under the ones that can be weighed. */
+export const unweighed = unstable_cache(
+  async (): Promise<Grave[]> => {
+    if (!hasDb()) return [];
+    try {
+      return await db().select().from(schema.graves)
+        .where(and(eq(schema.graves.status, "approved"), isNull(schema.graves.hours)))
+        .orderBy(desc(schema.graves.created_at)).limit(100);
+    } catch (e) {
+      console.error("[unweighed] read failed", e);
+      return [];
+    }
+  },
+  ["unweighed"],
+  { revalidate: 60 },
+);
