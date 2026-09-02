@@ -12,35 +12,38 @@ export const revalidate = 60;
 export default async function Home() {
   const rows = await wall();
 
+  /* Burying comes first. The site's job is to make killing a feature easy to
+     do and easy to justify — reading other people's is the second reason to
+     be here, not the first. */
   return (
     <main id="top" className="mx-auto w-full max-w-2xl px-5 py-14 sm:px-6 sm:py-20">
       <LiveCount />
 
       <header className="flex flex-col gap-4">
         <h1 className="text-4xl leading-[1.05] font-semibold tracking-tight sm:text-5xl">
-          Feature Graveyard
+          Bury a feature
         </h1>
         <p className="prose-tight max-w-prose text-lg leading-relaxed text-body">
-          Things we built that nobody used. Not a ranking, not a postmortem — just
-          the pile, so it is a bit less lonely.
+          Something you built that nobody used. You get a plot with a link — paste
+          it wherever the decision needs to land, and it stops being a thing you
+          have to explain.
         </p>
-        {/* On a long wall the form is a very long way down. */}
-        <a href="#submit" className="self-start text-sm text-accent underline underline-offset-4">
-          Add yours
-        </a>
       </header>
 
-      <Wall rows={rows} />
+      <section id="submit" className="mt-9 scroll-mt-8">
+        <SubmitForm />
+      </section>
 
-      <section id="submit" className="mt-20 scroll-mt-8 border-t border-rule pt-12">
-        <header className="mb-7 flex flex-col gap-2">
-          <h2 className="text-2xl font-semibold tracking-tight">Add one</h2>
+      <section className="mt-20 border-t border-rule pt-12">
+        <header className="flex flex-col gap-2">
+          <h2 className="text-2xl font-semibold tracking-tight">The graveyard</h2>
           <p className="prose-tight max-w-prose text-body">
-            The hours are optional and most people do not remember them. What it
-            was and what happened is the whole thing.
+            Everything buried so far. Not a ranking — just the pile, so it is a
+            bit less lonely.
           </p>
         </header>
-        <SubmitForm />
+
+        <Wall rows={rows} />
       </section>
 
       <footer className="mt-16 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-rule pt-8 text-xs text-muted">
@@ -50,9 +53,9 @@ export default async function Home() {
         <span aria-hidden>·</span>
         <span>Built in a day</span>
         <span aria-hidden>·</span>{" "}
-        <Link href="https://onedaybuilt.com" className="underline underline-offset-4 hover:text-accent">
+        <a href="https://onedaybuilt.com" className="underline underline-offset-4 hover:text-accent">
           onedaybuilt.com
-        </Link>
+        </a>
       </footer>
     </main>
   );

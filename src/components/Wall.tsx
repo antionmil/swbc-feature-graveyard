@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Entry } from "@/components/Entry";
 import type { Grave } from "@/lib/entries";
 
@@ -9,17 +9,29 @@ import type { Grave } from "@/lib/entries";
  *  chip click costs nothing. */
 export function Wall({ rows }: { rows: Grave[] }) {
   const [picked, setPicked] = useState<string | null>(null);
+  const [q, setQ] = useState("");
+
+  /* Searched in the browser over rows already on the page. The wall is capped
+     at 200, so a server round trip per keystroke would buy nothing and cost a
+     cold Neon connection each time. */
+  const hits = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    if (!needle) return rows;
+    return rows.filter((r) =>
+      `${r.feature} ${r.summary} ${r.outcome} ${r.author ?? ""}`.toLowerCase().includes(needle),
+    );
+  }, [rows, q]);
 
   const counts = new Map<string, number>();
-  for (const r of rows) counts.set(r.outcome, (counts.get(r.outcome) ?? 0) + 1);
-  const shown = picked ? rows.filter((r) => r.outcome === picked) : rows;
+  for (const r of hits) counts.set(r.outcome, (counts.get(r.outcome) ?? 0) + 1);
+  const shown = picked ? hits.filter((r) => r.outcome === picked) : hits;
 
   if (rows.length === 0) {
     return (
-      <p className="mt-10 text-body">
+      <p className="mt-8 text-body">
         Nothing buried yet.{" "}
         <a href="#submit" className="text-accent underline underline-offset-4">
-          The first one starts the wall.
+          Yours would be the first.
         </a>
       </p>
     );
@@ -39,7 +51,18 @@ export function Wall({ rows }: { rows: Grave[] }) {
 
   return (
     <>
-      <nav className="mt-9 flex flex-wrap items-start gap-x-6 gap-y-3" aria-label="Filter by outcome">
+      <div className="mt-9">
+        <input
+          type="search"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="search the graveyard"
+          aria-label="Search the graveyard"
+          className="w-full rounded-lg border border-rule bg-surface px-4 py-3 text-ink outline-none placeholder:text-faint focus:border-accent"
+        />
+      </div>
+
+      <nav className="mt-6 flex flex-wrap items-start gap-x-6 gap-y-3" aria-label="Filter by outcome">
         <button onClick={() => setPicked(null)} className={chip(!picked)}>
           all
         </button>
@@ -55,10 +78,15 @@ export function Wall({ rows }: { rows: Grave[] }) {
       <p className="mt-8 text-xs text-muted" aria-live="polite">
         {shown.length} {shown.length === 1 ? "entry" : "entries"}
         {picked ? ` · ${picked}` : ""}
+        {q.trim() ? ` · matching “${q.trim()}”` : ""}
       </p>
 
       <section className="mt-6 flex flex-col gap-9">
-        {shown.map((e, i) => <Entry key={e.id} e={e} i={i} />)}
+        {shown.length === 0 ? (
+          <p className="text-body">Nothing matches that. Try fewer words.</p>
+        ) : (
+          shown.map((e, i) => <Entry key={e.id} e={e} i={i} />)
+        )}
       </section>
     </>
   );
