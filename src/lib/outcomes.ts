@@ -67,9 +67,15 @@ export function authorLink(raw: unknown): { url: string; label: string } | null 
     const u = new URL(v);
     const host = HOSTS[u.hostname.replace(/^www\./, "")];
     if (!host) return null;
-    const handle = u.pathname.split("/").filter(Boolean)[0];
+    const parts = u.pathname.split("/").filter(Boolean);
+    // Bluesky handles live one level down, at /profile/<handle>.
+    const prefix = host === "bsky.app" ? "profile/" : "";
+    const handle = host === "bsky.app" ? parts[1] : parts[0];
     if (!handle || !/^[\w.-]{1,39}$/.test(handle)) return null;
-    return { url: `https://${host}/${handle}`, label: `${host.replace(/\.\w+$/, "")}/${handle}` };
+    return {
+      url: `https://${host}/${prefix}${handle}`,
+      label: `${host.replace(/\.\w+$/, "")}/${handle}`,
+    };
   } catch {
     return null;
   }
