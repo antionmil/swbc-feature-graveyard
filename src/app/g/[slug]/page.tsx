@@ -3,11 +3,17 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Replay } from "@/components/Replay";
 import { Stones } from "@/components/Stones";
-import { grave, stoneCount } from "@/lib/entries";
+import { grave, stoneCount, slugs } from "@/lib/entries";
 import { authorLink } from "@/lib/outcomes";
 import { isSlug } from "@/lib/slug";
 
 export const revalidate = 60;
+
+/* Without this the segment is server-rendered on every request, whatever
+   `revalidate` says — see the note on `slugs` in lib/entries.ts. */
+export async function generateStaticParams() {
+  return slugs();
+}
 
 const SITE = "https://featuregraveyard.onedaybuilt.com";
 

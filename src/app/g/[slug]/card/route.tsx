@@ -1,10 +1,16 @@
 import { ImageResponse } from "next/og";
-import { grave, heavierThan, stoneCount } from "@/lib/entries";
+import { grave, heavierThan, stoneCount, slugs } from "@/lib/entries";
 import { isSlug } from "@/lib/slug";
 import { bigHours, compare, registry } from "@/lib/toll";
 
 export const runtime = "nodejs";
 export const revalidate = 3600;
+
+/* Without this the segment is server-rendered on every request, whatever
+   `revalidate` says — see the note on `slugs` in lib/entries.ts. */
+export async function generateStaticParams() {
+  return slugs();
+}
 
 /* ImageResponse cannot use a CSS font-family — it needs real bytes. Google
    serves woff2 to a modern user-agent, which satori cannot read, so we ask as

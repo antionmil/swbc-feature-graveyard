@@ -32,6 +32,34 @@ async function readWall(): Promise<Grave[]> {
  */
 export const wall = unstable_cache(readWall, ["wall"], { revalidate: 60, tags: ["wall"] });
 
+/**
+ * Every approved slug, for generateStaticParams.
+ *
+ * Without it a dynamic segment is server-rendered on EVERY request — the build
+ * output said `ƒ /g/[slug]` and the response carried `no-store`, so each plot
+ * view and each link unfurl woke Neon up. `revalidate = 60` on the page does
+ * nothing on its own; the segment has to be told which params exist before
+ * anything about it is cached. Exactly the trap that CLAUDE.md rule 5 is about,
+ * found here by reading the header rather than the config.
+ *
+ * dynamicParams stays on by default, so a plot registered after the build is
+ * still rendered on demand — and then cached, which is the part that was
+ * missing.
+ */
+async function readSlugs(): Promise<{ slug: string }[]> {
+  if (!hasDb()) return [];
+  try {
+    const r = await db().select({ slug: schema.graves.slug }).from(schema.graves)
+      .where(eq(schema.graves.status, "approved")).limit(500);
+    return r;
+  } catch (e) {
+    // A build that cannot read the list still ships; the plots render on demand.
+    console.error("[slugs] read failed", e);
+    return [];
+  }
+}
+export const slugs = unstable_cache(readSlugs, ["slugs"], { revalidate: 60, tags: ["wall"] });
+
 /** Counts per outcome, for the filter row. Derived from the rows already
  *  fetched rather than a second query — the wall is capped at 200. */
 export function tally(rows: Grave[]) {
