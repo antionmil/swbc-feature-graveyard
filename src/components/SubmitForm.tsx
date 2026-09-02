@@ -111,9 +111,13 @@ export function SubmitForm({ canUpload = false }: { canUpload?: boolean }) {
       <div className="rounded-xl border border-rule bg-surface p-6">
         <p className="font-medium text-ink">Buried. The plot is yours.</p>
         <p className="prose-tight mt-1.5 text-sm text-body">
-          This link works now. Paste it wherever the decision needs to land —
-          it unfurls with the whole story, which is the point. It joins the wall
-          once it has been read.
+          This link works now and will not change. Paste it wherever the decision
+          needs to land — it unfurls with the whole story, which is the point.
+        </p>
+        <p className="prose-tight mt-2 text-sm text-muted">
+          It is <span className="text-ink">not on the wall yet</span>. Every
+          burial is read before it goes up — that is what keeps the wall worth
+          reading. Yours will appear there shortly.
         </p>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">

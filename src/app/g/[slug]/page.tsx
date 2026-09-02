@@ -68,9 +68,10 @@ export default async function Grave({ params }: { params: Promise<{ slug: string
 
       {g.status !== "approved" && (
         <p className="mt-8 rounded-lg border border-rule bg-surface px-4 py-3 text-sm text-body">
-          This plot is yours, and the link works. It appears on the wall once it
-          has been read — everything here is, which is what keeps it worth
-          reading.
+          <span className="text-ink">Not on the wall yet.</span> Every burial is
+          read before it goes up, so this one is waiting its turn. The plot is
+          yours either way and this link works now — it will not change when the
+          entry goes live.
         </p>
       )}
 
