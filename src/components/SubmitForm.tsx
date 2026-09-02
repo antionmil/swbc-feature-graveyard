@@ -60,6 +60,7 @@ export function SubmitForm() {
         body: JSON.stringify({
           feature: f.get("feature"),
           summary: f.get("summary"),
+          lesson: f.get("lesson"),
           outcome: f.get("outcome"),
           outcome_other: f.get("outcome_other"),
           people, weeks, effort,
@@ -158,9 +159,23 @@ export function SubmitForm() {
 
       <label className="flex flex-col gap-1.5">
         <span className="text-xs tracking-[0.1em] text-muted uppercase">What happened to it</span>
-        <textarea name="summary" required minLength={20} maxLength={600} rows={4}
+        <textarea name="summary" required minLength={20} maxLength={900} rows={5}
                   className={`${field} resize-y`}
-                  placeholder="Shipped it behind a flag. Turned the flag on for 5% of users. Nobody clicked it once in three months, so we took it out." />
+                  placeholder="Shipped it behind a flag. Turned the flag on for 5% of users. Nobody clicked it once in three months, so we took it out. Say as much as you want — the detail is what makes it useful to somebody else." />
+      </label>
+
+      <label className="flex flex-col gap-1.5">
+        <span className="text-xs tracking-[0.1em] text-muted uppercase">
+          What you would tell someone about to do the same · optional
+        </span>
+        <textarea
+          name="lesson" maxLength={500} rows={3}
+          className={`${field} resize-y`}
+          placeholder="We had asked people whether they wanted it, but never whether they would use it that week. Those are different questions."
+        />
+        <span className="text-xs text-faint">
+          This is the part people come back for.
+        </span>
       </label>
 
       {/* The toll. Three questions anybody can answer from memory, and the

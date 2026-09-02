@@ -67,6 +67,15 @@ export default async function Grave({ params }: { params: Promise<{ slug: string
         </h1>
         <p className="prose-tight mt-5 text-lg leading-relaxed text-body">{g.summary}</p>
 
+        {g.lesson && (
+          <aside className="mt-7 border-l-2 border-accent pl-5">
+            <h2 className="text-[10px] font-bold tracking-[0.24em] text-accent uppercase">
+              What to take from it
+            </h2>
+            <p className="prose-tight mt-2 leading-relaxed text-ink/85">{g.lesson}</p>
+          </aside>
+        )}
+
         {g.image_url && (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img

@@ -35,7 +35,8 @@ export async function POST(req: NextRequest) {
   }
 
   const feature = trim(body.feature, 120);
-  const summary = trim(body.summary, 600);
+  const summary = trim(body.summary, 900);
+  const lesson = trim(body.lesson, 500) || null;
   const outcome = cleanOutcome(body.outcome, body.outcome_other);
 
   const author = trim(body.author, 60) || null;
@@ -72,7 +73,7 @@ export async function POST(req: NextRequest) {
   try {
     const slug = newSlug();
     await db().insert(schema.graves).values({
-      feature, summary, outcome, author, author_url, image_url, slug,
+      feature, summary, lesson, outcome, author, author_url, image_url, slug,
       time_spent: weeks >= 52 ? `${(weeks / 52).toFixed(1)} years` : `${weeks} weeks`,
       people, weeks, effort, hours, spend,
       seeded: false,

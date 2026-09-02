@@ -16,6 +16,12 @@ export const graves = pgTable("graves", {
   id: serial("id").primaryKey(),
   feature: text("feature").notNull(),        // what was built
   summary: text("summary").notNull(),        // what happened to it
+
+  /* What somebody else should take from it. This is the point of the site —
+     a pile of failures is a curiosity, a pile of failures with the reason
+     attached is worth reading. Optional, because not everyone has worked out
+     their own lesson and a forced one is worse than none. */
+  lesson: text("lesson"),
   outcome: text("outcome").notNull(),        // abandoned | unused | no demand | ...
   time_spent: text("time_spent"),            // free text, kept for the seeds
 

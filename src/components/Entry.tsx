@@ -22,6 +22,13 @@ export function Entry({ e, i = 0 }: { e: Grave; i?: number }) {
 
       <p className="prose-tight mt-1.5 leading-relaxed text-body">{e.summary}</p>
 
+      {e.lesson && (
+        <p className="prose-tight mt-2.5 border-l-2 border-accent/40 pl-3 text-sm leading-relaxed text-ink/75">
+          <span className="text-[10px] tracking-[0.2em] text-accent uppercase">Take from it </span>
+          {e.lesson}
+        </p>
+      )}
+
       {/* A screenshot of the thing beats a paragraph about it. Capped in
           height so one tall phone screenshot cannot own the whole feed. */}
       {e.image_url && (
