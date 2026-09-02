@@ -7,12 +7,12 @@ import { Wall } from "@/components/Wall";
 import { YardPlay } from "@/components/YardPlay";
 import { Yard } from "@/components/Yard";
 import { heaviest, totals, wall } from "@/lib/entries";
-import { bigHours, registry } from "@/lib/toll";
+import { bigHours, money, registry } from "@/lib/toll";
 
 export const revalidate = 60;
 
 export default async function Home() {
-  const [rows, top, sum] = await Promise.all([wall(), heaviest(3), totals()]);
+  const [rows, top, sum] = await Promise.all([wall(), heaviest(5), totals()]);
   const all = bigHours(sum.hours);
 
   return (
@@ -65,25 +65,47 @@ export default async function Home() {
                 <li key={r.id}>
                   <Link
                     href={`/g/${r.slug}`}
-                    className="flex items-baseline gap-4 border-b border-rule py-3.5 transition-colors hover:border-accent"
+                    className="flex items-baseline gap-4 border-b border-rule py-3 transition-colors hover:border-accent"
                   >
                     <span className="w-5 shrink-0 text-sm text-faint tabular-nums">{i + 1}</span>
                     <span className="min-w-0 flex-1 truncate text-ink">{r.feature}</span>
-                    <span className="shrink-0 text-sm font-medium text-accent tabular-nums">{h.n}</span>
-                    <span className="shrink-0 text-[10px] tracking-[0.1em] text-faint uppercase">
-                      {(r.hours ?? 0) < 1000 ? "hours" : "weeks"}
+                    {/* Stacked, not strung out along the row. A fourth column
+                        only fits on a wide screen, and hiding the money on a
+                        phone hides the thing half of this list is about. */}
+                    <span className="shrink-0 text-right">
+                      <span className="block">
+                        <span className="text-sm font-medium text-accent tabular-nums">{h.n}</span>{" "}
+                        <span className="text-[10px] tracking-[0.1em] text-faint uppercase">
+                          {(r.hours ?? 0) < 1000 ? "hours" : "weeks"}
+                        </span>
+                      </span>
+                      <span className="block text-xs text-faint tabular-nums">{money(r).text}</span>
                     </span>
                   </Link>
                 </li>
               );
             })}
           </ol>
+          {top.some((r) => money(r).estimated) && (
+            <p className="mt-3 text-xs text-faint">
+              ≈ is our estimate, not a figure anyone gave — the hours priced at
+              contract rates for the year.{" "}
+              <Link href="/heaviest" className="underline underline-offset-4 hover:text-accent">
+                How that is worked out
+              </Link>
+            </p>
+          )}
         </section>
       )}
 
       <section className="mt-16 border-t border-rule pt-12">
-        <header className="flex flex-col gap-2">
+        <header className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="text-2xl font-semibold tracking-tight">Everyone buried here</h2>
+          <Link href="/lessons" className="text-sm text-accent underline underline-offset-4">
+            What we have learned
+          </Link>
+        </header>
+        <header className="mt-2 flex flex-col gap-2">
           <p className="prose-tight max-w-prose text-body">
             Not a ranking — just the pile, so it is a bit less lonely.
           </p>
@@ -99,6 +121,8 @@ export default async function Home() {
         <Link href="/bury" className="underline underline-offset-4 hover:text-accent">Register a death</Link>
         <span aria-hidden>·</span>
         <Link href="/heaviest" className="underline underline-offset-4 hover:text-accent">Heaviest tolls</Link>
+        <span aria-hidden>·</span>
+        <Link href="/lessons" className="underline underline-offset-4 hover:text-accent">What we have learned</Link>
         <span aria-hidden>·</span>
         <a href="https://onedaybuilt.com" className="underline underline-offset-4 hover:text-accent">onedaybuilt.com</a>
       </footer>

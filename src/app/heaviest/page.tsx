@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { heaviest, totals, unweighed } from "@/lib/entries";
-import { bigHours, registry } from "@/lib/toll";
+import { bigHours, money, registry } from "@/lib/toll";
 
 export const revalidate = 60;
 
@@ -33,6 +33,13 @@ export default async function Heaviest() {
           entries gathered from public threads rarely do, so those are counted at
           the lowest band — evenings and weekends — which under-states them on
           purpose. Every one links to what its author actually wrote.
+        </p>
+        <p className="prose-tight max-w-prose text-sm text-muted">
+          Nobody has told us what any of this cost in money. A figure marked
+          <span className="text-ink"> ≈ </span> is our estimate and not theirs:
+          the hours above, priced at contract rates for the year the work
+          happened. Where a story gave no duration to work from, there is no
+          figure at all rather than a made-up one — which is most of them.
         </p>
       </header>
 
@@ -93,8 +100,11 @@ export default async function Heaviest() {
                     </span>
                     {/* Always a value. A blank column reads as a rendering
                         fault, and "not said" is information. */}
+                    {/* Always a value. A blank column reads as a rendering
+                        fault, and both "not said" and a marked estimate are
+                        information. */}
                     <span className="mt-0.5 block text-xs text-faint tabular-nums">
-                      {r.spend === null ? "not said" : `$${r.spend.toLocaleString()}`}
+                      {money(r).text}
                     </span>
                   </span>
                 </Link>
@@ -128,10 +138,12 @@ export default async function Heaviest() {
         </section>
       )}
 
-      <footer className="mt-14 border-t border-rule pt-8 text-xs text-muted">
-        <Link href="/bury" className="underline underline-offset-4 hover:text-accent">
-          Bury one of yours
-        </Link>
+      <footer className="mt-14 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-rule pt-8 text-xs text-muted">
+        <Link href="/" className="underline underline-offset-4 hover:text-accent">The graveyard</Link>
+        <span aria-hidden>·</span>
+        <Link href="/lessons" className="underline underline-offset-4 hover:text-accent">What we have learned</Link>
+        <span aria-hidden>·</span>
+        <Link href="/bury" className="underline underline-offset-4 hover:text-accent">Bury one of yours</Link>
       </footer>
     </main>
   );

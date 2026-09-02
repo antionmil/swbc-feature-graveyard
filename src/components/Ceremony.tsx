@@ -32,6 +32,8 @@ type Props = {
   feature: string;
   /** On the certificate, not carved — callers keep passing it. */
   outcome?: string;
+  /** Carved under the name when it is there. The stone has to hold it. */
+  author?: string | null;
   hours: number;
   spend: number | null;
   id: number;
@@ -43,32 +45,128 @@ type Props = {
 const RUN = 9000;
 
 /**
- * Fit the name to the stone.
+ * Lay the inscription out on the stone.
  *
- * The old version wrapped at a fixed 22 characters and then picked one of
- * three sizes, which is backwards — 22 characters at 8px is 96 units wide on
- * a stone with 66 units of room, so long names ran off the edges. Now the
- * wrap is narrow and the size is computed from the longest line it produced,
- * so the text cannot overflow whatever the name is.
+ * The stone has to hold four things and they compete: HERE LIES, the feature
+ * name over as many as four lines, who buried it — a nickname somebody typed,
+ * of unknown length — and the registry number. The previous version fitted the
+ * name to a width and stacked everything down from a fixed line, which fails
+ * the moment a name is long AND an author is present.
+ *
+ * So nothing here is a fixed offset. The name is wrapped and sized until the
+ * whole block fits the space actually left over, and the block is then centred
+ * in that space, which is what "aligned" means on a headstone. If nothing fits
+ * even at the smallest legible size, the name is truncated rather than allowed
+ * to run off the edge.
+ *
+ * Coordinates are stone-local: y = 0 is the base, negative is up.
  */
-function inscribe(name: string, width = 58) {
-  const words = name.split(/\s+/).filter(Boolean);
-  const lines: string[] = [];
+const PANEL = {
+  header: -55.6,    // HERE LIES baseline, low enough that even its ascent
+                    // box clears the panel arc, not just its ink
+  headerSize: 5.2,  // narrow enough to sit inside the panel where it curves in
+  headerTrack: 2.2,
+  nameTop: -47.6,   // highest baseline the name may take
+  registry: -8.6,   // registry baseline, always at the foot
+  byline: -17.6,    // "buried by" baseline when there is one
+  width: 70,        // usable width, in the straight-sided part of the stone
+  bylineWidth: 68,
+};
+const ADVANCE = 0.56;   // average glyph advance, in em, measured wide on purpose
+const SERIF = 0.52;     // the inscription face runs a little narrower
+const LEADING = 1.3;
+
+function wrap(text: string, budget: number) {
+  const out: string[] = [];
   let line = "";
-  for (const w of words) {
-    if ((line + " " + w).trim().length <= 16) line = (line + " " + w).trim();
-    else {
-      if (line) lines.push(line);
-      line = w.length > 16 ? w.slice(0, 15) + "…" : w;
-    }
+  for (const w of text.split(/\s+/).filter(Boolean)) {
+    if (line && (line + " " + w).length > budget) { out.push(line); line = ""; }
+    line = line ? line + " " + w : w.length > budget ? w.slice(0, budget - 1) + "\u2026" : w;
   }
-  if (line) lines.push(line);
-  const kept = lines.slice(0, 3);
-  if (lines.length > 3) kept[2] = kept[2].slice(0, 14) + "…";
-  const longest = Math.max(1, ...kept.map((l) => l.length));
-  // 0.56em is about the average advance of the UI face at these weights.
-  const size = Math.max(5, Math.min(8.6, width / (longest * 0.56)));
-  return { lines: kept, size: Number(size.toFixed(2)) };
+  if (line) out.push(line);
+  return out;
+}
+
+/**
+ * One line, cut into the stone rather than printed on it.
+ *
+ * Three copies of the same glyphs. The moon sits up and to the right of the
+ * grave, so the wall of an incised groove that faces up-right is in shadow and
+ * the wall facing down-left catches the light — a dark copy offset up-right, a
+ * bright copy offset down-left, and the letter itself on top in the paler tone
+ * of freshly cut stone. That last part is also why the text stays readable:
+ * a real cut exposes lighter stone than the weathered face around it.
+ */
+function Carved({
+  y, size, fill = "#98a1ad", track, weight, children,
+}: {
+  y: number; size: number; fill?: string; track?: number; weight?: number; children: string;
+}) {
+  const base = {
+    textAnchor: "middle" as const,
+    fontFamily: "Georgia, 'Times New Roman', serif",
+    fontSize: size,
+    fontWeight: weight,
+    letterSpacing: track,
+  };
+  const d = size >= 7 ? 0.85 : 0.6;
+  return (
+    <g>
+      <text {...base} x={d} y={y - d} fill="#05070a">{children}</text>
+      <text {...base} x={-d * 0.9} y={y + d * 0.9} fill="#f2f5f8" opacity="0.62">{children}</text>
+      <text {...base} y={y} fill={fill}>{children}</text>
+    </g>
+  );
+}
+
+function inscription(feature: string, author?: string | null) {
+  const by = (author ?? "").trim().replace(/^@+/, "").slice(0, 22);
+  const hasBy = by.length > 0;
+
+  /* The floor the name may not cross: the byline's cap height when there is a
+     byline, the registry's when there is not. */
+  const floor = hasBy ? -26.4 : -18.6;
+  const span = floor - PANEL.nameTop;      // 21.2 with a byline, 29 without
+
+  let size = 5;
+  let lines = wrap(feature, 12);
+  for (let s = 9.5; s >= 5; s -= 0.25) {
+    const budget = Math.max(6, Math.floor(PANEL.width / (s * ADVANCE)));
+    const cand = wrap(feature, budget);
+    if (cand.length > 4) continue;
+    if ((cand.length - 1) * LEADING * s > span) continue;
+    size = s;
+    lines = cand;
+    break;
+  }
+  /* Nothing fitted whole: keep the smallest legible size and cut instead. */
+  if ((lines.length - 1) * LEADING * size > span || lines.length > 4) {
+    const nMax = Math.max(1, Math.min(4, Math.floor(span / (LEADING * 5)) + 1));
+    lines = wrap(feature, Math.max(6, Math.floor(PANEL.width / (5 * ADVANCE))));
+    if (lines.length > nMax) {
+      lines = lines.slice(0, nMax);
+      lines[nMax - 1] = lines[nMax - 1].replace(/.{1}$/, "\u2026");
+    }
+    size = 5;
+  }
+
+  const blockH = (lines.length - 1) * LEADING * size;
+  const first = PANEL.nameTop + (span - blockH) / 2;
+
+  /* The byline is whatever somebody typed, so it is the line that decides its
+     own size rather than the other way round. At the floor of 3.8 a 22
+     character nickname still sits inside the panel. */
+  const byText = hasBy ? `buried by ${by}` : null;
+  const bySize = byText
+    ? Math.max(3.8, Math.min(5.2, PANEL.bylineWidth / (byText.length * SERIF)))
+    : 0;
+
+  return {
+    size,
+    lines: lines.map((text, i) => ({ text, y: first + i * LEADING * size })),
+    by: byText,
+    bySize: Number(bySize.toFixed(2)),
+  };
 }
 
 /** Earth in flight. Fixed values, not random — the same burial every time. */
@@ -85,7 +183,7 @@ const throwOut = (at: number, i: number): Clump[] =>
     { dx: 58, peak: -36, spin: 320, s: 0.45, y: -7 },
   ].map((c, k) => ({
     at: at + k * 0.5,
-    x: 226 + i * 2,
+    x: 234 + i * 2,
     y: 94 + c.y,
     dx: c.dx,
     dy: 30 + i * 3,
@@ -95,15 +193,15 @@ const throwOut = (at: number, i: number): Clump[] =>
   }));
 const throwIn = (at: number, i: number): Clump[] =>
   [
-    { dx: -60, peak: -20, spin: 240, s: 0.95, y: 0 },
-    { dx: -72, peak: -28, spin: -200, s: 0.65, y: -5 },
-    { dx: -50, peak: -14, spin: 160, s: 0.5, y: 4 },
+    { dx: -72, peak: -20, spin: 240, s: 0.95, y: 0 },
+    { dx: -84, peak: -28, spin: -200, s: 0.65, y: -5 },
+    { dx: -62, peak: -14, spin: 160, s: 0.5, y: 4 },
   ].map((c, k) => ({
     at: at + k * 0.55,
-    x: 233 - i * 2,
+    x: 242 - i * 2,
     y: 94 + c.y,
     dx: c.dx,
-    dy: 50 - i * 5,
+    dy: 38 - i * 4,
     peak: c.peak,
     spin: c.spin,
     s: c.s,
@@ -114,11 +212,11 @@ const CLUMPS: Clump[] = [
   ...throwIn(58.5, 0), ...throwIn(67.5, 1), ...throwIn(76.5, 2),
 ];
 
-export function Ceremony({ feature, hours, spend, id, slug, people, onDone }: Props) {
+export function Ceremony({ feature, author, hours, spend, id, slug, people, onDone }: Props) {
   const [phase, setPhase] = useState<"run" | "done">("run");
   const [shown, setShown] = useState(0);
   const box = useRef<HTMLDivElement>(null);
-  const ins = inscribe(feature);
+  const ins = inscription(feature, author);
   const big = bigHours(hours, people);
 
   useEffect(() => {
@@ -214,12 +312,12 @@ export function Ceremony({ feature, hours, spend, id, slug, people, onDone }: Pr
                 and the floor. Scaled open in three steps by the strokes. */}
             <g transform="translate(170,152)">
               <g className="cy-pit">
-                <ellipse cx="0" cy="-1" rx="37" ry="11" fill="#54452f" />
-                <ellipse cx="0" cy="0" rx="36" ry="10.6" fill="#2a2116" />
-                <ellipse cx="0" cy="2.6" rx="31" ry="8.4" fill="#140e08" />
-                <ellipse cx="0" cy="5" rx="23" ry="5.4" fill="#040303" />
+                <ellipse cx="0" cy="-1" rx="40" ry="11.8" fill="#54452f" />
+                <ellipse cx="0" cy="0" rx="39" ry="11.4" fill="#2a2116" />
+                <ellipse cx="0" cy="2.8" rx="34" ry="9.2" fill="#140e08" />
+                <ellipse cx="0" cy="5.4" rx="25" ry="5.8" fill="#040303" />
                 {/* far wall, the only thing down there the moon reaches */}
-                <path d="M-36 0 A36 10.6 0 0 1 36 0" fill="none" stroke="#816a4b" strokeWidth="1.8" opacity="0.9" />
+                <path d="M-39 0 A39 11.4 0 0 1 39 0" fill="none" stroke="#816a4b" strokeWidth="1.8" opacity="0.9" />
               </g>
             </g>
 
@@ -248,15 +346,15 @@ export function Ceremony({ feature, hours, spend, id, slug, people, onDone }: Pr
             {/* The mound left behind once the earth is back. */}
             <g transform="translate(170,152)">
               <g className="cy-mound">
-                <path d="M-58 0 Q-30 -22 0 -23 Q30 -24 58 0 Z" fill="#2e2719" />
-                <path d="M-40 0 Q-18 -15 2 -16 Q22 -16 40 0 Z" fill="#392f22" />
+                <path d="M-56 0 Q-30 -24 0 -25 Q30 -26 56 0 Z" fill="#2e2719" />
+                <path d="M-42 0 Q-19 -17 2 -18 Q23 -18 42 0 Z" fill="#392f22" />
               </g>
             </g>
 
             {/* The gravedigger. Placement lives on the wrappers, motion on the
                 classes — an element cannot carry both a transform attribute
                 and a CSS transform, the CSS one silently wins. */}
-            <g transform="translate(228,152)">
+            <g transform="translate(238,152)">
               <g className="cy-turn">
                 <g className="cy-digger">
                   <ellipse cx="0" cy="1.5" rx="17" ry="3.6" fill="#04060a" opacity="0.6" />
@@ -281,10 +379,30 @@ export function Ceremony({ feature, hours, spend, id, slug, people, onDone }: Pr
                           <circle cx="19" cy="17" r="3" fill="#222b36" />
                           <g transform="translate(19,17)">
                             <g className="cy-spade">
-                              <path d="M-15 -13 L11 9.5" stroke="#7d6a4b" strokeWidth="2.8" strokeLinecap="round" />
-                              <path d="M-15 -13 l-3.4 -3" stroke="#6b5b40" strokeWidth="4.6" strokeLinecap="round" />
-                              <path d="M9.6 8.2 l6.2 5.4 a6.2 6.2 0 0 1 -8.9 7 l-4.4 -7 Z" fill="#78828c" />
-                              <path d="M9.6 8.2 l6.2 5.4 a6.2 6.2 0 0 1 -5.4 7.2 Z" fill="#5b646d" />
+                              {/* Drawn along its own axis and then turned onto
+                                  the arm's line — an angled spade built out of
+                                  free-hand diagonals is how the old one ended
+                                  up reading as a mallet. Same overall reach as
+                                  before, so the solved joint angles still hold:
+                                  the blade centre sits 19.5 units from the
+                                  hand either way. */}
+                              <g transform="rotate(41)">
+                                {/* T-grip */}
+                                <path d="M-17.5 -4.4 v8.8" stroke="#6f5e42" strokeWidth="2.8" strokeLinecap="round" />
+                                <path d="M-17.5 0 h3.5" stroke="#6f5e42" strokeWidth="3.2" strokeLinecap="round" />
+                                {/* shaft, with the grain shaded on the underside */}
+                                <path d="M-15 0 H10.6" stroke="#8b7757" strokeWidth="2.9" strokeLinecap="round" />
+                                <path d="M-14.6 1.05 H10.4" stroke="#655537" strokeWidth="0.9" strokeLinecap="round" />
+                                {/* socket, where the shaft goes into the steel */}
+                                <path d="M9.4 -1.6 L13.4 -4 L13.4 4 L9.4 1.6 Z" fill="#4b535b" />
+                                {/* blade: shoulders for a boot, sides, a shallow point */}
+                                <path d="M12.8 -5 L20.5 -5.3 Q25.8 -5 27.4 -2.5 Q28.2 -1.2 28.2 0 Q28.2 1.2 27.4 2.5 Q25.8 5 20.5 5.3 L12.8 5 Z"
+                                      fill="#67717c" />
+                                <path d="M12.8 0 L12.8 5 L20.5 5.3 Q25.8 5 27.4 2.5 Q28.2 1.2 28.2 0 Z" fill="#485159" />
+                                <path d="M13.4 0 H26.6" stroke="#858e99" strokeWidth="0.45" opacity="0.35" />
+                                {/* the step a boot presses on, at the blade's shoulder */}
+                                <path d="M12.6 -5 h2.6 v-1.7 h-2.6 Z" fill="#5a636d" />
+                              </g>
                             </g>
                           </g>
                         </g>
@@ -336,31 +454,29 @@ export function Ceremony({ feature, hours, spend, id, slug, people, onDone }: Pr
             {/* The stone, rising through the mound. */}
             <g transform="translate(170,152)">
               <g className="cy-stone">
-                <path d="M-40 0 V-38 A52 52 0 0 1 40 -38 V0 Z" fill="#1e232a" />
-                <path d="M-37 -1 V-38 A49 49 0 0 1 37 -38 V-1 Z" fill="url(#cyStoneFace)" />
-                <path d="M-37 -1 V-38 A49 49 0 0 1 -22 -54 L-19 -50.5 A45 45 0 0 0 -33 -37 V-1 Z" fill="#616a77" opacity="0.45" />
-                <path d="M-30 -5 V-37 A42 42 0 0 1 30 -37 V-5 Z" fill="#1b1f26" opacity="0.5" />
-                <text y="-47" textAnchor="middle" fontFamily="serif" fontSize="6" letterSpacing="2.6" fill="#98a1ad">
+                {/* Back slab, so the stone has an edge and not just an outline. */}
+                <path d="M-48 0 V-56 A90 90 0 0 1 48 -56 V0 Z" fill="#1a1f26" />
+                <path d="M-45 -1 V-56 A87 87 0 0 1 45 -56 V-1 Z" fill="url(#cyStoneFace)" />
+                {/* The left edge, where the moon does not reach, and the ground line. */}
+                <path d="M-45 -1 V-56 A87 87 0 0 1 -26 -66.5 L-23 -63.4 A83 83 0 0 0 -40 -55 V-1 Z"
+                      fill="#69737f" opacity="0.4" />
+                <path d="M-45 -1 h90 v1.6 h-90 Z" fill="#0d1116" opacity="0.7" />
+                {/* The polished panel the inscription is cut into. */}
+                <path d="M-38 -4 V-54 A76 76 0 0 1 38 -54 V-4 Z" fill="#242a32" opacity="0.55" />
+                <path d="M-38 -4 V-54 A76 76 0 0 1 38 -54" fill="none" stroke="#0e1217" strokeWidth="0.7" opacity="0.65" />
+
+                <Carved y={PANEL.header} size={PANEL.headerSize} track={PANEL.headerTrack} fill="#7d8794">
                   HERE LIES
-                </text>
-                {/* The block is centred on the panel rather than stacked down
-                    from a fixed line, so a one-word name and a three-line one
-                    both sit where a mason would have put them. */}
-                {ins.lines.map((l, i) => (
-                  <text
-                    key={i}
-                    y={-30 - ((ins.lines.length - 1) / 2) * (ins.size + 3) + i * (ins.size + 3) + ins.size * 0.35}
-                    textAnchor="middle"
-                    fontSize={ins.size}
-                    fontWeight="600"
-                    fill="#efedea"
-                  >
-                    {l}
-                  </text>
+                </Carved>
+                {ins.lines.map((l) => (
+                  <Carved key={l.y} y={l.y} size={ins.size} weight={500} fill="#a5aeba">
+                    {l.text}
+                  </Carved>
                 ))}
-                <text y="-6.5" textAnchor="middle" fontSize="5.4" letterSpacing="1.5" fill="#727a85">
-                  {registry(id)}
-                </text>
+                {ins.by ? (
+                  <Carved y={PANEL.byline} size={ins.bySize} fill="#7d8794">{ins.by}</Carved>
+                ) : null}
+                <Carved y={PANEL.registry} size={5} track={1.6} fill="#6f7885">{registry(id)}</Carved>
               </g>
             </g>
           </g>

@@ -7,9 +7,18 @@ import type { Grave } from "@/lib/entries";
 
 /** Filtering happens here, not in the URL, so the page stays cacheable and a
  *  chip click costs nothing. */
+const PAGE = 5;
+const MORE = 10;
+
 export function Wall({ rows }: { rows: Grave[] }) {
   const [picked, setPicked] = useState<string | null>(null);
   const [q, setQ] = useState("");
+
+  /* Every entry is already on the page — the wall is one cached query, capped
+     at 200 — so this only governs how many are painted. Twenty-two full stories
+     at once is a wall of text you scroll past; five is something you read.
+     "See more" costs no request, which is why it can be this small a step. */
+  const [take, setTake] = useState(PAGE);
 
   /* Searched in the browser over rows already on the page. The wall is capped
      at 200, so a server round trip per keystroke would buy nothing and cost a
@@ -24,7 +33,17 @@ export function Wall({ rows }: { rows: Grave[] }) {
 
   const counts = new Map<string, number>();
   for (const r of hits) counts.set(r.outcome, (counts.get(r.outcome) ?? 0) + 1);
-  const shown = picked ? hits.filter((r) => r.outcome === picked) : hits;
+  const matching = picked ? hits.filter((r) => r.outcome === picked) : hits;
+
+  /* Changing the filter or the search means a different list, so the count
+     starts again. Carrying 25 across from the previous list would drop the
+     reader into the middle of a set they have not seen the start of. */
+  const key = `${picked ?? ""}\u0000${q.trim().toLowerCase()}`;
+  const [lastKey, setLastKey] = useState(key);
+  if (key !== lastKey) { setLastKey(key); setTake(PAGE); }
+
+  const shown = matching.slice(0, take);
+  const left = matching.length - shown.length;
 
   if (rows.length === 0) {
     return (
@@ -76,9 +95,10 @@ export function Wall({ rows }: { rows: Grave[] }) {
       </nav>
 
       <p className="mt-8 text-xs text-muted" aria-live="polite">
-        {shown.length} {shown.length === 1 ? "entry" : "entries"}
+        {matching.length} {matching.length === 1 ? "entry" : "entries"}
         {picked ? ` · ${picked}` : ""}
         {q.trim() ? ` · matching “${q.trim()}”` : ""}
+        {left > 0 ? ` · showing ${shown.length}` : ""}
       </p>
 
       <section className="mt-6 flex flex-col gap-9">
@@ -88,6 +108,18 @@ export function Wall({ rows }: { rows: Grave[] }) {
           shown.map((e, i) => <Entry key={e.id} e={e} i={i} />)
         )}
       </section>
+
+      {left > 0 && (
+        <div className="mt-10 flex items-center gap-4">
+          <button
+            onClick={() => setTake((n) => n + MORE)}
+            className="rounded-full border border-edge px-5 py-2.5 text-sm text-muted transition-colors hover:border-accent hover:text-accent"
+          >
+            {left <= MORE ? `See the last ${left}` : `See ${MORE} more`}
+          </button>
+          <span className="text-xs text-faint">{left} still buried below</span>
+        </div>
+      )}
     </>
   );
 }

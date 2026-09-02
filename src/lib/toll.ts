@@ -58,3 +58,19 @@ export function bigHours(hours: number, people = 1) {
 }
 
 export const registry = (id: number) => `NO. ${String(id).padStart(4, "0")}`;
+
+
+/**
+ * What to show in a money column.
+ *
+ * Three states, and the site has to be able to tell them apart out loud:
+ * a figure the author gave, an estimate with its working shown, and nothing.
+ * The estimate is never rendered like a stated figure — it carries the ≈ and
+ * the word "est." wherever it appears, because a number nobody said, printed
+ * as though somebody did, is the definition of a fabricated metric.
+ */
+export function money(g: { spend: number | null; spend_est?: number | null }) {
+  if (g.spend) return { text: `$${g.spend.toLocaleString()}`, estimated: false as const };
+  if (g.spend_est) return { text: `≈ $${g.spend_est.toLocaleString()}`, estimated: true as const };
+  return { text: "not said", estimated: false as const };
+}

@@ -60,6 +60,13 @@ async function readSlugs(): Promise<{ slug: string }[]> {
 }
 export const slugs = unstable_cache(readSlugs, ["slugs"], { revalidate: 60, tags: ["wall"] });
 
+/** Everything that carries a lesson, newest first. The reason to read a wall
+ *  of failures, pulled out of the wall and given its own page. */
+async function readLessons(): Promise<Grave[]> {
+  return (await wall()).filter((g) => (g.lesson ?? "").trim().length > 0);
+}
+export const lessons = unstable_cache(readLessons, ["lessons"], { revalidate: 60, tags: ["wall"] });
+
 /** Counts per outcome, for the filter row. Derived from the rows already
  *  fetched rather than a second query — the wall is capped at 200. */
 export function tally(rows: Grave[]) {

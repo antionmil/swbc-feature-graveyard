@@ -34,6 +34,12 @@ export const graves = pgTable("graves", {
   effort: text("effort"),
   hours: integer("hours"),
   spend: integer("spend"),
+
+  /* An estimate of what the time was worth, for the many entries where nobody
+     said. Never mixed with `spend`: one is what a person told us, the other is
+     a guess with its working shown, and the site has to say which is which. */
+  spend_est: integer("spend_est"),
+  spend_est_note: text("spend_est_note"),
   author: text("author"),                    // optional, how they want to be credited
   author_url: text("author_url"),            // optional, normalised to a known host
 

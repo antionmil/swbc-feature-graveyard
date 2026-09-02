@@ -5,6 +5,7 @@ import { Replay } from "@/components/Replay";
 import { Stones } from "@/components/Stones";
 import { grave, stoneCount, slugs } from "@/lib/entries";
 import { authorLink } from "@/lib/outcomes";
+import { money } from "@/lib/toll";
 import { isSlug } from "@/lib/slug";
 
 export const revalidate = 60;
@@ -92,9 +93,27 @@ export default async function Grave({ params }: { params: Promise<{ slug: string
           />
         )}
 
+        {g.spend || g.spend_est ? (
+          <p className="mt-6 text-sm text-muted">
+            {g.spend ? (
+              <>
+                Also spent <span className="text-ink">${g.spend.toLocaleString()}</span>.
+              </>
+            ) : (
+              <>
+                <span className="text-ink">{money(g).text}</span> in money —{" "}
+                <span className="text-faint">
+                  our estimate, not theirs: {g.spend_est_note}
+                </span>
+              </>
+            )}
+          </p>
+        ) : null}
+
         <Replay
           feature={g.feature}
           outcome={g.outcome}
+          author={g.author ?? g.source_author ?? null}
           hours={g.hours ?? 0}
           spend={g.spend}
           people={g.people ?? 1}

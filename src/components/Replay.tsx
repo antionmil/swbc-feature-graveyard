@@ -8,6 +8,7 @@ import { Ceremony } from "@/components/Ceremony";
 export function Replay(p: {
   feature: string;
   outcome: string;
+  author: string | null;
   hours: number;
   spend: number | null;
   people: number;

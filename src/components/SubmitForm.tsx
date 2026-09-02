@@ -20,7 +20,7 @@ export function SubmitForm() {
   const [err, setErr] = useState<string | null>(null);
   const [slug, setSlug] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [buried, setBuried] = useState<{ id: number; hours: number; spend: number | null } | null>(null);
+  const [buried, setBuried] = useState<{ id: number; hours: number; spend: number | null; author: string | null } | null>(null);
   const [shot, setShot] = useState<{ name: string; url: string } | null>(null);
   const [shooting, setShooting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -76,7 +76,12 @@ export function SubmitForm() {
       if (!res.ok) throw new Error(d.error ?? "That did not save.");
       setSlug(typeof d.slug === "string" ? d.slug : "");
       setOutcomeLabel(String(f.get("outcome") === OTHER ? f.get("outcome_other") : f.get("outcome")) || "");
-      setBuried({ id: d.id ?? 0, hours: d.hours ?? live, spend: Number(f.get("spend")) || null });
+      setBuried({
+        id: d.id ?? 0,
+        hours: d.hours ?? live,
+        spend: Number(f.get("spend")) || null,
+        author: String(f.get("author") ?? "").trim() || null,
+      });
     } catch (e) {
       setErr(e instanceof Error ? e.message : "That did not save.");
     } finally {
@@ -92,6 +97,7 @@ export function SubmitForm() {
           <Ceremony
             feature={feature}
             outcome={outcomeLabel}
+            author={buried.author}
             hours={buried.hours}
             spend={buried.spend}
             id={buried.id}
