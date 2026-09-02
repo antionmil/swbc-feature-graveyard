@@ -60,19 +60,20 @@ export function Ceremony({ feature, outcome, hours, spend, id, slug, people, onD
       onDone?.();
       return;
     }
+    /* The stone lands at 7.0s of the 7.2s sequence. The certificate must not
+       exist before then — showing it while the shovel is still digging gives
+       the ending away and makes the burial feel like a loading screen. */
     const t = setTimeout(() => {
+      setPhase("done");
+      onDone?.();
       const t0 = performance.now();
       const step = (now: number) => {
         const p = Math.min(1, (now - t0) / 1300);
         setShown(Math.round(hours * (1 - Math.pow(1 - p, 3))));
         if (p < 1) requestAnimationFrame(step);
-        else {
-          setPhase("done");
-          onDone?.();
-        }
       };
       requestAnimationFrame(step);
-    }, 6400);
+    }, 7050);
     return () => clearTimeout(t);
   }, [hours, onDone]);
 
@@ -145,7 +146,7 @@ export function Ceremony({ feature, outcome, hours, spend, id, slug, people, onD
         </svg>
       </div>
 
-      {phase === "done" || shown > 0 ? (
+      {phase === "done" ? (
         <div className="rise rounded-xl border border-rule bg-surface p-5">
           <div className="flex items-baseline justify-between">
             <span className="text-[10px] tracking-[0.18em] text-muted uppercase">Certificate of death</span>
