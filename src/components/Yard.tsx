@@ -31,14 +31,14 @@ function Zombie({ delay, dur, scale, y }: { delay: number; dur: number; scale: n
     >
       <g transform={`translate(0 ${y}) scale(${scale})`}>
         <g className="yard-bob">
-          <ellipse cx="0" cy="-19" rx="2.6" ry="3" fill="#0f1216" />
-          <path d="M-2.4 -16 h4.8 v9 h-4.8 Z" fill="#0f1216" />
+          <ellipse cx="0" cy="-19" rx="2.6" ry="3" className="yard-figure" />
+          <path d="M-2.4 -16 h4.8 v9 h-4.8 Z" className="yard-figure" />
           {/* arms out in front, the only bit of the pose that says zombie */}
-          <path d="M2 -14 l6 1.6" stroke="#0f1216" strokeWidth="1.7" strokeLinecap="round" />
-          <path d="M-2 -14 l5.4 2.6" stroke="#0f1216" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="M2 -14 l6 1.6" className="yard-figure-s" strokeWidth="1.7" strokeLinecap="round" />
+          <path d="M-2 -14 l5.4 2.6" className="yard-figure-s" strokeWidth="1.5" strokeLinecap="round" />
         </g>
-        <path className="yard-leg-a" d="M-1 -7 v7" stroke="#0f1216" strokeWidth="1.8" strokeLinecap="round" />
-        <path className="yard-leg-b" d="M1 -7 v7" stroke="#0f1216" strokeWidth="1.8" strokeLinecap="round" />
+        <path className="yard-leg-a" d="M-1 -7 v7" className="yard-figure-s" strokeWidth="1.8" strokeLinecap="round" />
+        <path className="yard-leg-b" d="M1 -7 v7" className="yard-figure-s" strokeWidth="1.8" strokeLinecap="round" />
       </g>
     </g>
   );
@@ -53,12 +53,12 @@ export function Yard({ className = "", zombies = false }: { className?: string; 
             <path
               key={i}
               d={`M${s.x} 70 V${70 - s.h + s.w / 2} A${s.w / 2} ${s.w / 2} 0 0 1 ${s.x + s.w} ${70 - s.h + s.w / 2} V70 Z`}
-              fill="#1c2026"
+              className="yard-stone"
               opacity={s.o}
             />
           ))}
         </g>
-        <rect y="66" width="500" height="4" fill="#171a1f" />
+        <rect y="66" width="500" height="4" className="yard-line" />
         {zombies && (
           <g>
             <Zombie delay={0} dur={54} scale={1} y={66} />
@@ -67,8 +67,8 @@ export function Yard({ className = "", zombies = false }: { className?: string; 
           </g>
         )}
         <g className="yard-fog">
-          <ellipse cx="120" cy="62" rx="150" ry="10" fill="#2a3038" opacity=".28" />
-          <ellipse cx="380" cy="66" rx="180" ry="9" fill="#2a3038" opacity=".22" />
+          <ellipse cx="120" cy="62" rx="150" ry="10" className="yard-mist" opacity=".28" />
+          <ellipse cx="380" cy="66" rx="180" ry="9" className="yard-mist" opacity=".22" />
         </g>
       </svg>
     </div>

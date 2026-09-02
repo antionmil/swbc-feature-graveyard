@@ -58,7 +58,7 @@ export function Wall({ rows }: { rows: Grave[] }) {
           onChange={(e) => setQ(e.target.value)}
           placeholder="search the graveyard"
           aria-label="Search the graveyard"
-          className="w-full rounded-lg border border-rule bg-surface px-4 py-3 text-ink outline-none placeholder:text-faint focus:border-accent"
+          className="w-full rounded-lg border border-edge bg-surface px-4 py-3 text-ink outline-none placeholder:text-faint focus:border-accent"
         />
       </div>
 

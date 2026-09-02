@@ -94,7 +94,7 @@ export function Stones({ graveId, initial }: { graveId: number; initial: number 
         aria-pressed={mine}
         aria-label={mine ? "Lift your stone back off" : "Hold to leave a stone"}
         className={`relative touch-none overflow-hidden rounded-full border px-4 py-2 text-sm transition-colors select-none ${
-          mine ? "border-accent text-accent" : "border-rule text-muted hover:text-body"
+          mine ? "border-accent text-accent" : "border-edge text-muted hover:text-body"
         }`}
       >
         <span

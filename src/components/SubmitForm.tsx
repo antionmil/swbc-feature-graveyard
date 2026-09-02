@@ -135,7 +135,7 @@ export function SubmitForm() {
   }
 
   const field =
-    "w-full rounded-lg border border-rule bg-surface px-4 py-3 text-ink outline-none placeholder:text-faint focus:border-accent";
+    "w-full rounded-lg border border-edge bg-surface px-4 py-3 text-ink outline-none placeholder:text-faint focus:border-accent";
 
   return (
     <form onSubmit={send} className="flex flex-col gap-4">
@@ -254,7 +254,7 @@ export function SubmitForm() {
           A screenshot · optional
         </span>
         {shot ? (
-          <div className="flex items-center gap-3 rounded-lg border border-rule bg-surface px-4 py-3">
+          <div className="flex items-center gap-3 rounded-lg border border-edge bg-surface px-4 py-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={shot.url} alt="" className="h-12 w-12 rounded object-cover" />
             <span className="min-w-0 flex-1 truncate text-sm text-body">{shot.name}</span>
@@ -277,7 +277,7 @@ export function SubmitForm() {
               accept="image/png,image/jpeg,image/webp,image/gif"
               onChange={pickShot}
               disabled={shooting}
-              className="w-full rounded-lg border border-rule bg-surface px-4 py-3 text-sm text-body file:mr-3 file:rounded-full file:border-0 file:bg-rule file:px-3 file:py-1.5 file:text-xs file:text-body"
+              className="w-full rounded-lg border border-edge bg-surface px-4 py-3 text-sm text-body file:mr-3 file:rounded-full file:border-0 file:bg-rule file:px-3 file:py-1.5 file:text-xs file:text-body"
             />
             <span className="text-xs text-faint">
               {shooting ? "uploading…" : "PNG, JPEG, WebP or GIF, up to 5 MB. Seeing the thing beats reading about it."}
