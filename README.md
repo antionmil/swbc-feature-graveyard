@@ -47,8 +47,8 @@ no demand, no traction, removed, replaced.
     pnpm seed --write
     pnpm dev
 
-Neon, free plan, EU region — `vercel.json` pins the functions to `dub1` so the
-two sit together. Supabase is not used here: its free plan allows only two
+Neon, free plan, Frankfurt — `vercel.json` pins the functions to `fra1` so
+the database and the functions sit in the same region. Supabase is not used here: its free plan allows only two
 active projects and a 26-site run needs more.
 
 Moderation queue: `/admin?k=<ADMIN_PASSWORD>`.
