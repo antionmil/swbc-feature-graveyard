@@ -37,8 +37,8 @@ function Zombie({ delay, dur, scale, y }: { delay: number; dur: number; scale: n
           <path d="M2 -14 l6 1.6" className="yard-figure-s" strokeWidth="1.7" strokeLinecap="round" />
           <path d="M-2 -14 l5.4 2.6" className="yard-figure-s" strokeWidth="1.5" strokeLinecap="round" />
         </g>
-        <path className="yard-leg-a" d="M-1 -7 v7" className="yard-figure-s" strokeWidth="1.8" strokeLinecap="round" />
-        <path className="yard-leg-b" d="M1 -7 v7" className="yard-figure-s" strokeWidth="1.8" strokeLinecap="round" />
+        <path className="yard-leg-a yard-figure-s" d="M-1 -7 v7" strokeWidth="1.8" strokeLinecap="round" />
+        <path className="yard-leg-b yard-figure-s" d="M1 -7 v7" strokeWidth="1.8" strokeLinecap="round" />
       </g>
     </g>
   );
