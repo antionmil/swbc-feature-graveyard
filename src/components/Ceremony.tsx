@@ -74,7 +74,8 @@ const PANEL = {
 };
 const ADVANCE = 0.56;   // average glyph advance, in em, measured wide on purpose
 const SERIF = 0.52;     // the inscription face runs a little narrower
-const LEADING = 1.3;
+const LEADING = 1.42;  // a serif at this size needs more air than a sans;
+                       // at 1.3 the descenders crowded the line below
 
 function wrap(text: string, budget: number) {
   const out: string[] = [];
