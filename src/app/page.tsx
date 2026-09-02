@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { DigButton } from "@/components/DigButton";
 import { DigTitle } from "@/components/DigTitle";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { LiveCount } from "@/components/LiveCount";
 import { Wall } from "@/components/Wall";
 import { Yard } from "@/components/Yard";
@@ -14,12 +16,15 @@ export default async function Home() {
 
   return (
     <main id="top" className="mx-auto w-full max-w-2xl px-5 pb-14 sm:px-6 sm:pb-20">
-      <div className="pt-10">
-        <LiveCount />
+      <div className="flex items-center gap-4 pt-8">
+        <div className="min-w-0 flex-1">
+          <LiveCount />
+        </div>
+        <ThemeToggle />
       </div>
 
       {/* The horizon arrives before a word of copy does. */}
-      <Yard className="-mx-5 opacity-90 sm:-mx-6" zombies />
+      <Yard className="-mx-5 mt-6 mb-14 opacity-90 sm:-mx-6" zombies />
 
       <header className="flex flex-col gap-5">
         <DigTitle
@@ -31,17 +36,7 @@ export default async function Home() {
           certificate and an hour count — so killing it stops being a thing you
           have to explain.
         </p>
-        <Link
-          href="/bury"
-          className="dig-btn inline-flex items-center gap-2.5 self-start rounded-full bg-accent px-7 py-3.5 text-sm font-medium tracking-[0.04em] text-ground"
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ transformOrigin: "12px 4px" }}>
-            <path d="M12 3v11" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-            <path d="M8 14h8v3a4 4 0 0 1-8 0z" fill="currentColor" />
-            <path d="M9.5 3h5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-          </svg>
-          Register a death
-        </Link>
+        <DigButton href="/bury">Register a death</DigButton>
         {sum.graves > 0 && (
           <p className="text-sm text-muted">
             <span className="text-ink tabular-nums">{all.n}</span>{" "}

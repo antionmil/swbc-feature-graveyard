@@ -14,6 +14,8 @@ export const EFFORTS = [
   { id: "most", label: "most of my time", hoursPerWeek: 25, blurb: "around other work" },
   { id: "evenings", label: "evenings and weekends", hoursPerWeek: 15, blurb: "after hours" },
   { id: "here", label: "here and there", hoursPerWeek: 5, blurb: "whenever there was time" },
+  { id: "odd", label: "the odd evening", hoursPerWeek: 3, blurb: "a couple of sittings a week" },
+  { id: "scraps", label: "in scraps", hoursPerWeek: 1, blurb: "an hour here, an hour there" },
 ] as const;
 
 export type EffortId = (typeof EFFORTS)[number]["id"];

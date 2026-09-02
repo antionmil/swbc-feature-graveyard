@@ -166,8 +166,12 @@ export function SubmitForm() {
       {/* The toll. Three questions anybody can answer from memory, and the
           number moves as they answer — which is what makes them honest about
           the third one. */}
-      <fieldset className="flex flex-col gap-4 rounded-lg border border-rule bg-surface p-4">
-        <legend className="px-1 text-xs tracking-[0.1em] text-muted uppercase">What it cost</legend>
+      {/* The legend is taken out of the fieldset's flow and placed above it.
+          A <legend> sits ON the border by default, which left it jammed
+          against the top edge and misaligned with every other label. */}
+      <fieldset className="flex flex-col gap-4 rounded-lg border border-edge bg-surface p-4 pt-3">
+        <legend className="sr-only">What it cost</legend>
+        <p className="text-xs tracking-[0.1em] text-muted uppercase">What it cost</p>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1.5">
@@ -205,10 +209,10 @@ export function SubmitForm() {
         </p>
 
         <label className="flex flex-col gap-1.5">
-          <span className="text-xs text-muted">Money on top · optional</span>
+          <span className="text-xs text-muted">Money spent on it · optional</span>
           <input
             name="spend" type="number" min={0} className={field}
-            placeholder="ads, contractors, tools — leave blank if none"
+            placeholder="ads, contractors, tools, hosting — blank if none"
           />
         </label>
       </fieldset>

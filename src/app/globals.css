@@ -24,18 +24,20 @@
   --font-body: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --color-ground: #f5f3ee;
-    --color-surface: #eceae3;
-    --color-ink: #17191c;     /* 15.88:1 */
-    --color-body: #474b52;    /*  7.90:1 */
-    --color-muted: #666b73;   /*  4.84:1 */
-    --color-faint: #646a73;   /*  4.92:1 */
-    --color-rule: #dcd8d0;    /* decorative divider, no text on it */
-    --color-edge: #8d867c;    /*  3.25:1 — input and control outlines */
-    --color-accent: #3d6b51;  /*  5.54:1, and the same under the button text */
-  }
+/* Light is a CHOICE, not a consequence of the operating system. It was on
+   `prefers-color-scheme`, which meant anyone whose laptop is in light mode got
+   a light graveyard whether they wanted one or not. Dark is the default and
+   the theme only changes when someone asks. */
+:root[data-theme="light"] {
+  --color-ground: #f5f3ee;
+  --color-surface: #eceae3;
+  --color-ink: #17191c;     /* 15.88:1 */
+  --color-body: #474b52;    /*  7.90:1 */
+  --color-muted: #666b73;   /*  4.84:1 */
+  --color-faint: #646a73;   /*  4.92:1 */
+  --color-rule: #dcd8d0;    /* decorative divider, no text on it */
+  --color-edge: #8d867c;    /*  3.25:1 — input and control outlines */
+  --color-accent: #3d6b51;  /*  5.54:1, and the same under the button text */
 }
 
 html, body { background: var(--color-ground); color: var(--color-ink); }
@@ -152,12 +154,22 @@ body { font-family: var(--font-body); }
 .yard-leg-b { animation: yard-leg-b 2.3s ease-in-out infinite; transform-origin: 1px -7px }
 
 /* The title climbs out of the ground, one letter at a time. Runs once. */
+/* Each letter has its OWN clipped box, so it is pushed up from behind a line
+   rather than sliding in from off-screen. The overshoot and the settle are
+   what make it read as effort. */
 @keyframes rise-letter {
-  from { transform: translateY(0.9em) rotate(-6deg); opacity: 0 }
-  to   { transform: none; opacity: 1 }
+  0%   { transform: translateY(100%) rotate(-9deg) }
+  58%  { transform: translateY(-14%) rotate(3deg) }
+  78%  { transform: translateY(4%) rotate(-1.5deg) }
+  100% { transform: none }
 }
-.dig-title { display: inline-block; overflow: hidden; padding-bottom: .06em }
-.dig-title span { display: inline-block; opacity: 0; animation: rise-letter .62s cubic-bezier(.2,1.15,.35,1) forwards }
+.dig-title { display: inline-flex; flex-wrap: wrap }
+.dig-letter { display: inline-block; overflow: hidden; padding: 0 0 .08em }
+.dig-letter > span {
+  display: inline-block;
+  transform: translateY(100%);
+  animation: rise-letter .78s cubic-bezier(.3,.9,.25,1) forwards;
+}
 
 /* The button carries a shovel that tips when you reach for it. */
 .dig-btn svg { transition: transform .35s cubic-bezier(.2,1.3,.4,1) }
@@ -166,7 +178,7 @@ body { font-family: var(--font-body); }
 @media (prefers-reduced-motion: reduce) {
   .yard-walk, .yard-bob, .yard-leg-a, .yard-leg-b { animation: none }
   .yard-walk { display: none }
-  .dig-title span { opacity: 1; animation: none }
+  .dig-letter > span { transform: none; animation: none }
   .dig-btn svg { transition: none }
 }
 
@@ -182,3 +194,19 @@ body { font-family: var(--font-body); }
 .yard-figure-s  { stroke: color-mix(in srgb, var(--color-ink) 30%, var(--color-ground)) }
 .yard-line      { fill: color-mix(in srgb, var(--color-ink) 8%, var(--color-ground)) }
 .yard-mist      { fill: color-mix(in srgb, var(--color-ink) 16%, var(--color-ground)) }
+
+/* The button after the click: it drives down like a spade, throws a line of
+   dirt, and holds while the next page loads. */
+@keyframes spade-drive { 0% { transform: none } 40% { transform: translateY(4px) scale(.97) } 100% { transform: translateY(1px) scale(.99) } }
+@keyframes spade-turn  { 0% { transform: none } 35% { transform: rotate(-58deg) translateY(-3px) } 100% { transform: rotate(-90deg) translateY(-2px) } }
+@keyframes spade-spray {
+  0%   { transform: translate(0,0) scale(.4); opacity: 0 }
+  25%  { opacity: 1 }
+  100% { transform: translate(var(--dx),var(--dy)) scale(1); opacity: 0 }
+}
+.digging { animation: spade-drive .5s cubic-bezier(.3,1,.4,1) forwards; pointer-events: none }
+.digging svg { animation: spade-turn .5s cubic-bezier(.3,1,.4,1) forwards }
+.digging .spray > i { animation: spade-spray .62s cubic-bezier(.25,.8,.4,1) forwards }
+@media (prefers-reduced-motion: reduce) {
+  .digging, .digging svg, .digging .spray > i { animation: none }
+}
