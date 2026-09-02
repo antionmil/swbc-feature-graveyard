@@ -12,7 +12,8 @@
     "db:gen": "drizzle-kit generate",
     "build:check": "NEXT_DIST_DIR=.next-build next build",
     "dev:webpack": "NODE_OPTIONS=--max-old-space-size=2048 next dev --webpack",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "check": "tsx scripts/check.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.122.0",

@@ -17,6 +17,16 @@ import { resolve } from "node:path";
 import { db, hasDb, schema } from "../src/lib/db";
 import { isOutcome } from "../src/lib/outcomes";
 
+/* Loaded here because these scripts run outside Next, which is what loads
+   .env.local for the app. `db.ts` reads the variable lazily inside db(), so
+   doing this at the top of the module is early enough. */
+try {
+  process.loadEnvFile(".env.local");
+} catch {
+  // Already in the environment (CI), or no local file. Both fine.
+}
+
+
 type Seed = {
   feature: string;
   summary: string;
