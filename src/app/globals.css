@@ -43,3 +43,68 @@ body { font-family: var(--font-body); }
 }
 .stone-drop { animation: stone-drop .5s cubic-bezier(.3,1.4,.5,1) both; }
 @media (prefers-reduced-motion: reduce) { .stone-drop { animation: none } }
+
+/* THE BURIAL.
+   Three dig strokes, a descent, a fill and the stone. Timings live here rather
+   than in JS so the whole thing is one declarative sequence and honours
+   prefers-reduced-motion by simply not running. */
+@keyframes cy-cam   { to { transform: translate(-12px,-6px) scale(1.07) } }
+@keyframes cy-dig   {
+  0%,4%    { transform: translate(300px,120px) rotate(20deg); opacity: 0 }
+  8%       { opacity: 1 }
+  11%      { transform: translate(230px,188px) rotate(-22deg) }
+  15%      { transform: translate(210px,142px) rotate(28deg) }
+  20%      { transform: translate(135px,150px) rotate(74deg) }
+  24%      { transform: translate(230px,188px) rotate(-22deg) }
+  29%      { transform: translate(210px,142px) rotate(28deg) }
+  34%      { transform: translate(135px,150px) rotate(74deg) }
+  39%      { transform: translate(230px,188px) rotate(-22deg) }
+  44%      { transform: translate(210px,142px) rotate(28deg) }
+  49%      { transform: translate(135px,150px) rotate(74deg) }
+  54%      { transform: translate(320px,180px) rotate(70deg); opacity: 0 }
+  70%      { transform: translate(135px,148px) rotate(34deg); opacity: 0 }
+  74%      { opacity: 1 }
+  82%      { transform: translate(205px,144px) rotate(14deg); opacity: 1 }
+  88%,100% { transform: translate(330px,170px) rotate(54deg); opacity: 0 }
+}
+@keyframes cy-pit {
+  0%,6%   { rx: 0; ry: 0 }
+  20%     { rx: 30px; ry: 8px }
+  35%     { rx: 42px; ry: 14px }
+  50%     { rx: 52px; ry: 19px }
+  72%     { rx: 52px; ry: 19px }
+  86%,100%{ rx: 24px; ry: 0 }
+}
+@keyframes cy-mound {
+  0%,14%  { d: path("M96 197 Q135 197 174 197 Z") }
+  34%     { d: path("M96 197 Q135 187 174 197 Z") }
+  50%     { d: path("M96 197 Q135 180 174 197 Z") }
+  72%     { d: path("M96 197 Q135 174 174 197 Z") }
+  86%,100%{ d: path("M96 197 Q135 197 174 197 Z") }
+}
+@keyframes cy-card {
+  0%,55%  { opacity: 0; transform: none }
+  58%     { opacity: 1 }
+  70%     { opacity: .06; transform: translateY(46px) scale(.84) }
+  100%    { opacity: 0; transform: translateY(46px) scale(.84) }
+}
+@keyframes cy-stone {
+  0%,86%  { transform: translateY(46px) rotate(-4deg); opacity: 0 }
+  88%     { opacity: 1 }
+  96%     { transform: translateY(-4px) rotate(1deg) }
+  100%    { transform: none; opacity: 1 }
+}
+.ceremony .cy-cam    { animation: cy-cam 7.2s cubic-bezier(.2,.6,.2,1) forwards }
+.ceremony .cy-shovel { animation: cy-dig 7.2s linear forwards }
+.ceremony .cy-pit,
+.ceremony .cy-rim    { animation: cy-pit 7.2s linear forwards }
+.ceremony .cy-mound  { animation: cy-mound 7.2s linear forwards }
+.ceremony .cy-card   { animation: cy-card 7.2s ease-in forwards }
+.ceremony .cy-stone  { animation: cy-stone 7.2s cubic-bezier(.2,1.25,.35,1) forwards }
+
+@media (prefers-reduced-motion: reduce) {
+  .ceremony .cy-cam, .ceremony .cy-shovel, .ceremony .cy-pit, .ceremony .cy-rim,
+  .ceremony .cy-mound, .ceremony .cy-card { animation: none }
+  .ceremony .cy-shovel, .ceremony .cy-card { opacity: 0 }
+  .ceremony .cy-stone { animation: none; opacity: 1 }
+}

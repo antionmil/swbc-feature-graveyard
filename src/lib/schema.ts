@@ -17,7 +17,17 @@ export const graves = pgTable("graves", {
   feature: text("feature").notNull(),        // what was built
   summary: text("summary").notNull(),        // what happened to it
   outcome: text("outcome").notNull(),        // abandoned | unused | no demand | ...
-  time_spent: text("time_spent"),            // free text, often null
+  time_spent: text("time_spent"),            // free text, kept for the seeds
+
+  /* What it actually cost. `hours` is derived from the three above and STORED
+     rather than computed on read, so the leaderboard can sort on it without
+     recomputing 200 rows. `spend` is optional and secondary — this audience
+     pays in time. */
+  people: integer("people"),
+  weeks: integer("weeks"),
+  effort: text("effort"),
+  hours: integer("hours"),
+  spend: integer("spend"),
   author: text("author"),                    // optional, how they want to be credited
   author_url: text("author_url"),            // optional, normalised to a known host
 

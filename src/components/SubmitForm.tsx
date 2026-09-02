@@ -3,15 +3,24 @@
 import { useRef, useState } from "react";
 import { upload } from "@vercel/blob/client";
 import { MAX_OUTCOME, OTHER, OUTCOMES } from "@/lib/outcomes";
+import { Ceremony } from "@/components/Ceremony";
+import { EFFORTS, hoursOf } from "@/lib/toll";
 
 export function SubmitForm() {
   const [startedAt] = useState(() => Date.now());
   const [outcome, setOutcome] = useState("");
   const [custom, setCustom] = useState(0);
+  const [people, setPeople] = useState(1);
+  const [weeks, setWeeks] = useState(6);
+  const [effort, setEffort] = useState<string>("evenings");
+  const live = hoursOf(people, weeks, effort);
+  const [feature, setFeature] = useState("");
+  const [outcomeLabel, setOutcomeLabel] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [slug, setSlug] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [buried, setBuried] = useState<{ id: number; hours: number; spend: number | null } | null>(null);
   const [shot, setShot] = useState<{ name: string; url: string } | null>(null);
   const [shooting, setShooting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -53,7 +62,8 @@ export function SubmitForm() {
           summary: f.get("summary"),
           outcome: f.get("outcome"),
           outcome_other: f.get("outcome_other"),
-          time_spent: f.get("time_spent"),
+          people, weeks, effort,
+          spend: f.get("spend"),
           author: f.get("author"),
           author_url: f.get("author_url"),
           image_url: shot?.url ?? null,
@@ -64,6 +74,8 @@ export function SubmitForm() {
       const d = await res.json();
       if (!res.ok) throw new Error(d.error ?? "That did not save.");
       setSlug(typeof d.slug === "string" ? d.slug : "");
+      setOutcomeLabel(String(f.get("outcome") === OTHER ? f.get("outcome_other") : f.get("outcome")) || "");
+      setBuried({ id: d.id ?? 0, hours: d.hours ?? live, spend: Number(f.get("spend")) || null });
     } catch (e) {
       setErr(e instanceof Error ? e.message : "That did not save.");
     } finally {
@@ -74,6 +86,17 @@ export function SubmitForm() {
   if (slug !== null) {
     const url = `https://featuregraveyard.onedaybuilt.com/g/${slug}`;
     return (
+      <div className="flex flex-col gap-5">
+        {buried && (
+          <Ceremony
+            feature={feature}
+            outcome={outcomeLabel}
+            hours={buried.hours}
+            spend={buried.spend}
+            id={buried.id}
+            slug={slug}
+          />
+        )}
       <div className="rounded-xl border border-rule bg-surface p-6">
         <p className="font-medium text-ink">Buried. The plot is yours.</p>
         <p className="prose-tight mt-1.5 text-sm text-body">
@@ -101,10 +124,11 @@ export function SubmitForm() {
         <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm">
           <a href={`/g/${slug}`} className="text-accent underline underline-offset-4">See the plot</a>
           <a href="#top" className="text-muted underline underline-offset-4 hover:text-ink">Back to the wall</a>
-          <button onClick={() => setSlug(null)} className="text-muted underline underline-offset-4 hover:text-ink">
+          <button onClick={() => { setSlug(null); setBuried(null); }} className="text-muted underline underline-offset-4 hover:text-ink">
             Bury another
           </button>
         </div>
+      </div>
       </div>
     );
   }
@@ -127,6 +151,7 @@ export function SubmitForm() {
       <label className="flex flex-col gap-1.5">
         <span className="text-xs tracking-[0.1em] text-muted uppercase">What you built</span>
         <input name="feature" required maxLength={120} className={field}
+               value={feature} onChange={(e) => setFeature(e.target.value)}
                placeholder="A recommendation engine" />
       </label>
 
@@ -136,6 +161,56 @@ export function SubmitForm() {
                   className={`${field} resize-y`}
                   placeholder="Shipped it behind a flag. Turned the flag on for 5% of users. Nobody clicked it once in three months, so we took it out." />
       </label>
+
+      {/* The toll. Three questions anybody can answer from memory, and the
+          number moves as they answer — which is what makes them honest about
+          the third one. */}
+      <fieldset className="flex flex-col gap-4 rounded-lg border border-rule bg-surface p-4">
+        <legend className="px-1 text-xs tracking-[0.1em] text-muted uppercase">What it cost</legend>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs text-muted">How many people</span>
+            <input
+              type="number" min={1} max={200} value={people}
+              onChange={(e) => setPeople(Math.max(1, Number(e.target.value) || 1))}
+              className={field}
+            />
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs text-muted">For how many weeks</span>
+            <input
+              type="number" min={1} max={520} value={weeks}
+              onChange={(e) => setWeeks(Math.max(1, Number(e.target.value) || 1))}
+              className={field}
+            />
+          </label>
+        </div>
+
+        <label className="flex flex-col gap-1.5">
+          <span className="text-xs text-muted">How hard</span>
+          <select value={effort} onChange={(e) => setEffort(e.target.value)} className={field}>
+            {EFFORTS.map((x) => (
+              <option key={x.id} value={x.id}>
+                {x.label} — {x.blurb} ({x.hoursPerWeek}h a week)
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <p className="text-sm text-body">
+          <span className="font-medium text-accent tabular-nums">{live.toLocaleString()}</span> hours
+          of your life. <span className="text-faint">That is what goes on the stone.</span>
+        </p>
+
+        <label className="flex flex-col gap-1.5">
+          <span className="text-xs text-muted">Money on top · optional</span>
+          <input
+            name="spend" type="number" min={0} className={field}
+            placeholder="ads, contractors, tools — leave blank if none"
+          />
+        </label>
+      </fieldset>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-1.5">
@@ -171,12 +246,6 @@ export function SubmitForm() {
           )}
         </label>
 
-        <label className="flex flex-col gap-1.5">
-          <span className="text-xs tracking-[0.1em] text-muted uppercase">
-            How long · optional
-          </span>
-          <input name="time_spent" maxLength={40} className={field} placeholder="about three weeks" />
-        </label>
       </div>
 
       <div className="flex flex-col gap-1.5">
