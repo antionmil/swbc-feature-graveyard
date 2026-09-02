@@ -6,7 +6,7 @@ const KEY = "fg.vid";
 
 /** One id per browser, kept locally. Random, tied to nothing, and the only
  *  thing sent — which is what makes "visitors" mean people rather than views. */
-function visitorId() {
+export function visitorId() {
   try {
     let v = localStorage.getItem(KEY);
     if (!v) {

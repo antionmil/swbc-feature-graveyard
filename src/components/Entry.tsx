@@ -13,7 +13,11 @@ export function Entry({ e, i = 0 }: { e: Grave; i?: number }) {
       className="rise border-l-2 border-rule pl-4 sm:pl-5"
       style={{ animationDelay: `${Math.min(i, 12) * 0.04}s` }}
     >
-      <h3 className="text-base leading-snug font-medium text-ink sm:text-lg">{e.feature}</h3>
+      <h3 className="text-base leading-snug font-medium sm:text-lg">
+        <a href={`/g/${e.slug}`} className="text-ink hover:text-accent">
+          {e.feature}
+        </a>
+      </h3>
 
       <p className="prose-tight mt-1.5 leading-relaxed text-body">{e.summary}</p>
 

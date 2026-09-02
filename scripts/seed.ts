@@ -16,6 +16,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { db, hasDb, schema } from "../src/lib/db";
 import { isOutcome } from "../src/lib/outcomes";
+import { newSlug } from "../src/lib/slug";
 
 /* Loaded here because these scripts run outside Next, which is what loads
    .env.local for the app. `db.ts` reads the variable lazily inside db(), so
@@ -94,6 +95,7 @@ async function main() {
       summary: s.summary,
       outcome: s.outcome,
       time_spent: s.time_spent,
+      slug: newSlug(),
       seeded: true,
       source_url: s.source.url,
       source_site: s.source.site,

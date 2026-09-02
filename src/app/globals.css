@@ -32,3 +32,14 @@ body { font-family: var(--font-body); }
   outline-offset: 3px;
   border-radius: 4px;
 }
+
+/* A stone drops in and overshoots slightly as it lands. That overshoot is the
+   difference between a number changing and an object arriving somewhere. */
+@keyframes stone-drop {
+  0%   { transform: translateY(-22px) scale(.7); opacity: 0 }
+  55%  { transform: translateY(2px) scale(1.06); opacity: 1 }
+  75%  { transform: translateY(-2px) scale(.98) }
+  100% { transform: none; opacity: 1 }
+}
+.stone-drop { animation: stone-drop .5s cubic-bezier(.3,1.4,.5,1) both; }
+@media (prefers-reduced-motion: reduce) { .stone-drop { animation: none } }

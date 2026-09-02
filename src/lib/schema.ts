@@ -1,4 +1,4 @@
-import { pgTable, text, integer, index, serial, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, index, serial, boolean, timestamp, primaryKey } from "drizzle-orm/pg-core";
 
 /**
  * One table for the wall.
@@ -27,6 +27,17 @@ export const graves = pgTable("graves", {
   source_site: text("source_site"),
   source_author: text("source_author"),
   source_date: text("source_date"),
+
+  /* A screenshot of the thing. Optional, and most people will not have one of
+     something they killed three years ago. Uploaded to blob storage, so this
+     is a URL we issued — never a URL somebody typed, which would be a
+     tracking and abuse vector pointed at our own readers. */
+  image_url: text("image_url"),
+
+  /* The public identifier. Short, random and url-safe rather than the serial
+     id, so a plot cannot be guessed by counting and nobody can tell how many
+     submissions were rejected. */
+  slug: text("slug").notNull().unique(),
 
   status: text("status").notNull().default("pending"), // pending | approved | rejected
   created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -62,3 +73,20 @@ export const counters = pgTable("counters", {
   key: text("key").primaryKey(),
   n: integer("n").notNull().default(0),
 });
+
+/** Stones left on a grave.
+ *
+ *  The primary key is the PAIR, which is the whole mechanic: one stone per
+ *  visitor per grave, enforced by the database rather than by remembering to
+ *  check. Without it this is a click counter and the number means nothing.
+ *
+ *  `sid` is the same random browser id the visitor counter uses — no account,
+ *  and a stone can be lifted back off. */
+export const stones = pgTable("stones", {
+  grave_id: integer("grave_id").notNull(),
+  sid: text("sid").notNull(),
+  created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  primaryKey({ columns: [t.grave_id, t.sid] }),
+  index("stones_grave_idx").on(t.grave_id),
+]);

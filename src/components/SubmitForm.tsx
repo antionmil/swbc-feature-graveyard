@@ -9,7 +9,8 @@ export function SubmitForm() {
   const [custom, setCustom] = useState(0);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const [done, setDone] = useState(false);
+  const [slug, setSlug] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   async function send(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -33,7 +34,7 @@ export function SubmitForm() {
       });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error ?? "That did not save.");
-      setDone(true);
+      setSlug(typeof d.slug === "string" ? d.slug : "");
     } catch (e) {
       setErr(e instanceof Error ? e.message : "That did not save.");
     } finally {
@@ -41,22 +42,38 @@ export function SubmitForm() {
     }
   }
 
-  if (done) {
+  if (slug !== null) {
+    const url = `https://featuregraveyard.onedaybuilt.com/g/${slug}`;
     return (
-      <div className="rounded-xl border border-rule bg-surface p-6 text-center">
-        <p className="font-medium text-ink">Buried.</p>
+      <div className="rounded-xl border border-rule bg-surface p-6">
+        <p className="font-medium text-ink">Buried. The plot is yours.</p>
         <p className="prose-tight mt-1.5 text-sm text-body">
-          It goes up once I have read it. Everything here is read first — that is
-          what keeps the wall worth reading.
+          This link works now. Paste it wherever the decision needs to land —
+          it unfurls with the whole story, which is the point. It joins the wall
+          once it has been read.
         </p>
-        {/* A confirmation with no way onward is a dead end. */}
-        <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm">
-          <a href="#top" className="text-accent underline underline-offset-4">Back to the wall</a>
+
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <code className="min-w-0 flex-1 truncate rounded-lg border border-rule bg-ground px-3 py-2 text-xs text-body">
+            {url}
+          </code>
           <button
-            onClick={() => setDone(false)}
-            className="text-muted underline underline-offset-4 hover:text-ink"
+            onClick={() => {
+              navigator.clipboard?.writeText(url);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1800);
+            }}
+            className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-ground"
           >
-            Add another
+            {copied ? "copied" : "copy"}
+          </button>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+          <a href={`/g/${slug}`} className="text-accent underline underline-offset-4">See the plot</a>
+          <a href="#top" className="text-muted underline underline-offset-4 hover:text-ink">Back to the wall</a>
+          <button onClick={() => setSlug(null)} className="text-muted underline underline-offset-4 hover:text-ink">
+            Bury another
           </button>
         </div>
       </div>

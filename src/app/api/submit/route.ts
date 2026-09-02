@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { db, hasDb, schema } from "@/lib/db";
 import { cleanOutcome } from "@/lib/outcomes";
+import { newSlug } from "@/lib/slug";
 import { checkGate, looksLikeBot } from "@/lib/ratelimit";
 
 export const dynamic = "force-dynamic";
@@ -48,13 +49,21 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
 
+  const image_url = typeof body.image_url === "string" && body.image_url.startsWith("https://")
+    ? body.image_url.slice(0, 500)
+    : null;
+
   try {
+    const slug = newSlug();
     await db().insert(schema.graves).values({
-      feature, summary, outcome, time_spent, author,
+      feature, summary, outcome, time_spent, author, image_url, slug,
       seeded: false,
       status: "pending", // nothing reaches the wall unread
     });
-    return NextResponse.json({ ok: true });
+    /* The slug goes back immediately, before moderation. The plot is theirs
+       from the moment they bury — that is the whole point of route two. The
+       page itself says it is awaiting review. */
+    return NextResponse.json({ ok: true, slug });
   } catch (e) {
     console.error("[submit] insert failed", e);
     return NextResponse.json({ error: "That did not save. Try again in a moment." }, { status: 500 });
