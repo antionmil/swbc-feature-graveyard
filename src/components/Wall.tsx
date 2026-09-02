@@ -15,7 +15,14 @@ export function Wall({ rows }: { rows: Grave[] }) {
   const shown = picked ? rows.filter((r) => r.outcome === picked) : rows;
 
   if (rows.length === 0) {
-    return <p className="mt-10 text-body">Nothing buried yet. The first one starts the wall.</p>;
+    return (
+      <p className="mt-10 text-body">
+        Nothing buried yet.{" "}
+        <a href="#submit" className="text-accent underline underline-offset-4">
+          The first one starts the wall.
+        </a>
+      </p>
+    );
   }
 
   const chip = (active: boolean) =>

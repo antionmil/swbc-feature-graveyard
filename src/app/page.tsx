@@ -12,7 +12,7 @@ export default async function Home() {
   const rows = await wall();
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-5 py-14 sm:px-6 sm:py-20">
+    <main id="top" className="mx-auto w-full max-w-2xl px-5 py-14 sm:px-6 sm:py-20">
       <header className="flex flex-col gap-4">
         <h1 className="text-4xl leading-[1.05] font-semibold tracking-tight sm:text-5xl">
           Feature Graveyard
@@ -21,6 +21,13 @@ export default async function Home() {
           Things we built that nobody used. Not a ranking, not a postmortem — just
           the pile, so it is a bit less lonely.
         </p>
+        {/* On a long wall the form is a very long way down. */}
+        <a
+          href="#submit"
+          className="self-start text-sm text-accent underline underline-offset-4"
+        >
+          Add yours
+        </a>
       </header>
 
       <Wall rows={rows} />
@@ -36,8 +43,13 @@ export default async function Home() {
         <SubmitForm />
       </section>
 
-      <footer className="mt-16 border-t border-rule pt-8 text-xs text-muted">
-        Built in a day ·{" "}
+      <footer className="mt-16 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-rule pt-8 text-xs text-muted">
+        <a href="#top" className="underline underline-offset-4 hover:text-accent">
+          Back to the top
+        </a>
+        <span aria-hidden>·</span>
+        <span>Built in a day</span>
+        <span aria-hidden>·</span>{" "}
         <Link href="https://onedaybuilt.com" className="underline underline-offset-4 hover:text-accent">
           onedaybuilt.com
         </Link>

@@ -46,6 +46,16 @@ export function SubmitForm() {
           It goes up once I have read it. Everything here is read first — that is
           what keeps the wall worth reading.
         </p>
+        {/* A confirmation with no way onward is a dead end. */}
+        <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm">
+          <a href="#top" className="text-accent underline underline-offset-4">Back to the wall</a>
+          <button
+            onClick={() => setDone(false)}
+            className="text-muted underline underline-offset-4 hover:text-ink"
+          >
+            Add another
+          </button>
+        </div>
       </div>
     );
   }
