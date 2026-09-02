@@ -41,7 +41,7 @@ export default async function Home() {
         {sum.graves > 0 && (
           <p className="text-sm text-muted">
             <span className="text-ink tabular-nums">{all.n}</span>{" "}
-            {all.unit.replace(" of your life", "")} buried across{" "}
+            full-time weeks buried across{" "}
             {sum.weighed === sum.graves
               ? `${sum.graves} features`
               : `${sum.weighed} of ${sum.graves} features weighed`}
@@ -71,7 +71,7 @@ export default async function Home() {
                     <span className="min-w-0 flex-1 truncate text-ink">{r.feature}</span>
                     <span className="shrink-0 text-sm font-medium text-accent tabular-nums">{h.n}</span>
                     <span className="shrink-0 text-[10px] tracking-[0.1em] text-faint uppercase">
-                      {h.unit.replace(" of your life", "").replace("full-time ", "")}
+                      {(r.hours ?? 0) < 1000 ? "hours" : "weeks"}
                     </span>
                   </Link>
                 </li>

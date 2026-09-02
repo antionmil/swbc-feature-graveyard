@@ -94,7 +94,7 @@ export default async function Grave({ params }: { params: Promise<{ slug: string
         {g.seeded && g.source_url && (
           <p className="mt-6 text-xs text-muted">
             Told by {g.source_author} on{" "}
-            <a href={g.source_url} rel="noopener nofollow" className="underline underline-offset-4">
+            <a href={g.source_url} target="_blank" rel="noopener nofollow" className="underline underline-offset-4">
               {g.source_site}
             </a>
             {g.source_date ? `, ${g.source_date.slice(0, 4)}` : ""}. Summarised here, not quoted.
@@ -106,7 +106,7 @@ export default async function Grave({ params }: { params: Promise<{ slug: string
             {authorLink(g.author_url) ? (
               <a
                 href={authorLink(g.author_url)!.url}
-                rel="noopener nofollow"
+                target="_blank" rel="noopener nofollow"
                 className="text-body underline underline-offset-4 hover:text-accent"
               >
                 {g.author}

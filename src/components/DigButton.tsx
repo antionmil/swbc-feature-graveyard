@@ -27,7 +27,7 @@ export function DigButton({ href, children }: { href: string; children: React.Re
     router.prefetch(href);
     if (reduce) return void router.push(href);
     setPhase("sinking");
-    setTimeout(() => router.push(href), 1080);
+    setTimeout(() => router.push(href), 160);
   }
 
   return (
@@ -35,11 +35,11 @@ export function DigButton({ href, children }: { href: string; children: React.Re
       <a
         href={href}
         onClick={go}
-        className={`stone-btn relative z-10 inline-flex items-center justify-center gap-2.5 bg-accent px-7 text-sm font-medium tracking-[0.04em] text-ground ${
+        className={`stone-btn relative z-10 inline-flex items-center gap-2.5 rounded-full bg-accent px-7 py-3.5 text-sm font-medium tracking-[0.04em] text-ground ${
           phase === "sinking" ? "carving" : ""
         }`}
       >
-        <span className="stone-face">
+        <span className="dig-btn inline-flex items-center gap-2.5">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M12 3v11" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
             <path d="M8 14h8v3a4 4 0 0 1-8 0z" fill="currentColor" />
@@ -47,12 +47,9 @@ export function DigButton({ href, children }: { href: string; children: React.Re
           </svg>
           {children}
         </span>
-        <span aria-hidden className="stone-epitaph">
-          HERE LIES
-        </span>
+
       </a>
-      {/* The mound it settles into. */}
-      <span aria-hidden className={`stone-mound ${phase === "sinking" ? "up" : ""}`} />
+
     </span>
   );
 }

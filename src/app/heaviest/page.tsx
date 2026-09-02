@@ -39,7 +39,7 @@ export default async function Heaviest() {
       {sum.graves > 0 && (
         <p className="mt-8 rounded-xl border border-rule bg-surface px-5 py-4">
           <span className="text-2xl font-semibold text-accent tabular-nums">{all.n}</span>{" "}
-          <span className="text-body">{all.unit.replace(" of your life", "")}</span>
+          <span className="text-body">full-time weeks</span>
           <span className="text-muted">
             {" "}
             buried across{" "}
@@ -85,8 +85,11 @@ export default async function Heaviest() {
                     <span className="block text-base font-semibold text-accent tabular-nums sm:text-lg">
                       {h.n}
                     </span>
+                    {/* Plain units. "person-weeks" is precise and completely
+                        opaque in a two-word column; the "2 × 78 weeks" on the
+                        row above already says how many people. */}
                     <span className="block text-[10px] tracking-[0.1em] text-faint uppercase">
-                      {h.unit.replace(" of your life", "").replace("full-time ", "")}
+                      {(r.hours ?? 0) < 1000 ? "hours" : "weeks"}
                     </span>
                     {/* Always a value. A blank column reads as a rendering
                         fault, and "not said" is information. */}

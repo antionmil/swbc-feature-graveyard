@@ -145,18 +145,46 @@ export function YardGame({ onExit }: { onExit: () => void }) {
         ctx.fillRect(g.x, gy + 5, 12, 8); ctx.fill();
         ctx.globalAlpha = 1;
       }
+      /* Drawn the same way as the silhouettes on the horizon — round head,
+         body, arms out in front, two legs out of step. A flat rectangle was
+         the reason they read as blocks rather than as the things walking
+         across the top of the page. */
       for (const z of st.current.zs) {
-        ctx.fillStyle = "#5f8f5a";
+        const g = "#5f8f5a";
         ctx.globalAlpha = z.dying ? z.dying / 10 : 1;
-        const sq = z.dying ? 8 : 18;
-        ctx.fillRect(z.x, z.y + (18 - sq), 12, sq);
-        if (!z.dying) ctx.fillRect(z.x + (z.vx > 0 ? 12 : -5), z.y + 4, 5, 2);
+        const squash = z.dying ? 0.34 : 1;
+        const dir = z.vx > 0 ? 1 : -1;
+        const bx = z.x + 6;
+        const by = z.y + 18 - 18 * squash;
+        ctx.save();
+        ctx.translate(bx, by);
+        ctx.scale(1, squash);
+        const sway = Math.sin(st.current.t / 7 + z.x) * 1.4;
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(sway * 0.5, 3, 3.1, 0, 6.283); ctx.fill();   // head
+        ctx.fillRect(-2.6 + sway * 0.4, 5.6, 5.4, 8);                          // body
+        ctx.lineWidth = 1.9; ctx.strokeStyle = g; ctx.lineCap = "round";
+        ctx.beginPath();                                                        // arms out
+        ctx.moveTo(sway * 0.4, 7.4); ctx.lineTo(dir * 7.4, 6.2 + sway * 0.3);
+        ctx.moveTo(sway * 0.4, 8.6); ctx.lineTo(dir * 6.4, 8.8 - sway * 0.3);
+        ctx.stroke();
+        ctx.beginPath();                                                        // legs, out of step
+        ctx.moveTo(-1.4, 13.4); ctx.lineTo(-1.4 + Math.sin(st.current.t / 6 + z.x) * 2.2, 18);
+        ctx.moveTo(1.4, 13.4); ctx.lineTo(1.4 - Math.sin(st.current.t / 6 + z.x) * 2.2, 18);
+        ctx.stroke();
+        ctx.restore();
         ctx.globalAlpha = 1;
       }
       const pp = st.current.p;
       ctx.fillStyle = ink;
-      ctx.fillRect(pp.x, pp.y, 12, 20);
-      ctx.fillRect(pp.x + (pp.face > 0 ? 12 : -6), pp.y + 3, 6, 2);
+      ctx.beginPath(); ctx.arc(pp.x + 6, pp.y + 3.4, 3.4, 0, 6.283); ctx.fill();
+      ctx.fillRect(pp.x + 3, pp.y + 6.4, 6, 8.6);
+      ctx.lineWidth = 2; ctx.strokeStyle = ink; ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(pp.x + 6, pp.y + 15); ctx.lineTo(pp.x + 3.4, pp.y + 20);
+      ctx.moveTo(pp.x + 6, pp.y + 15); ctx.lineTo(pp.x + 8.6, pp.y + 20);
+      ctx.moveTo(pp.x + 6, pp.y + 8.4); ctx.lineTo(pp.x + 6 + pp.face * 6, pp.y + 7); // spade arm
+      ctx.stroke();
 
       raf = requestAnimationFrame(loop);
     };

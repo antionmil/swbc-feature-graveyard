@@ -52,7 +52,7 @@ export function Entry({ e, i = 0 }: { e: Grave; i?: number }) {
             {authorLink(e.author_url) ? (
               <a
                 href={authorLink(e.author_url)!.url}
-                rel="noopener nofollow"
+                target="_blank" rel="noopener nofollow"
                 className="text-body underline underline-offset-4 hover:text-accent"
               >
                 {e.author}
@@ -67,7 +67,7 @@ export function Entry({ e, i = 0 }: { e: Grave; i?: number }) {
             <span aria-hidden>·</span>
             <a
               href={e.source_url}
-              rel="noopener nofollow"
+              target="_blank" rel="noopener nofollow"
               className="underline underline-offset-4 hover:text-accent"
             >
               {e.source_author ? `${e.source_author} on ` : ""}
