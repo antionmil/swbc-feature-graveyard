@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Replay } from "@/components/Replay";
 import { Stones } from "@/components/Stones";
 import { grave, stoneCount } from "@/lib/entries";
 import { authorLink } from "@/lib/outcomes";
@@ -75,6 +76,16 @@ export default async function Grave({ params }: { params: Promise<{ slug: string
             loading="lazy"
           />
         )}
+
+        <Replay
+          feature={g.feature}
+          outcome={g.outcome}
+          hours={g.hours ?? 0}
+          spend={g.spend}
+          people={g.people ?? 1}
+          id={g.id}
+          slug={g.slug}
+        />
 
         <div className="mt-8 border-t border-rule pt-6">
           <Stones graveId={g.id} initial={total} />
