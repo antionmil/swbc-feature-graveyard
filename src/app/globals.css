@@ -69,70 +69,300 @@ body { font-family: var(--font-body); }
 .stone-drop { animation: stone-drop .5s cubic-bezier(.3,1.4,.5,1) both; }
 @media (prefers-reduced-motion: reduce) { .stone-drop { animation: none } }
 
-/* THE BURIAL.
-   Three dig strokes, a descent, a fill and the stone. Timings live here rather
-   than in JS so the whole thing is one declarative sequence and honours
-   prefers-reduced-motion by simply not running. */
-@keyframes cy-cam   { to { transform: translate(-12px,-6px) scale(1.07) } }
-@keyframes cy-dig   {
-  0%,4%    { transform: translate(300px,120px) rotate(20deg); opacity: 0 }
-  8%       { opacity: 1 }
-  11%      { transform: translate(230px,188px) rotate(-22deg) }
-  15%      { transform: translate(210px,142px) rotate(28deg) }
-  20%      { transform: translate(135px,150px) rotate(74deg) }
-  24%      { transform: translate(230px,188px) rotate(-22deg) }
-  29%      { transform: translate(210px,142px) rotate(28deg) }
-  34%      { transform: translate(135px,150px) rotate(74deg) }
-  39%      { transform: translate(230px,188px) rotate(-22deg) }
-  44%      { transform: translate(210px,142px) rotate(28deg) }
-  49%      { transform: translate(135px,150px) rotate(74deg) }
-  54%      { transform: translate(320px,180px) rotate(70deg); opacity: 0 }
-  70%      { transform: translate(135px,148px) rotate(34deg); opacity: 0 }
-  74%      { opacity: 1 }
-  82%      { transform: translate(205px,144px) rotate(14deg); opacity: 1 }
-  88%,100% { transform: translate(330px,170px) rotate(54deg); opacity: 0 }
+/* THE BURIAL — one 9s sequence, nine seconds of somebody doing a job.
+
+   Every animated group sets `transform-origin: 0 0`. This is not decoration.
+   The CSS default is `50% 50%`, and on an SVG child that resolves against the
+   WHOLE viewBox, not the element — so a rotation meant for a shoulder joint
+   pivots around the middle of the sky instead. Placement stays on plain
+   wrapper <g transform="..."> attributes, because an element cannot carry both
+   a transform attribute and a CSS transform: the CSS one wins and the
+   placement silently disappears.
+
+   The clock, in percent:
+     5      he sets himself
+     7-38   three strokes: plant, drive, heave over the shoulder
+     40-52  the feature goes down and its light goes out
+     53-64  what leaves the grave
+     54-57  he turns on the spot
+     56-80  three strokes back the other way
+     85-94  the stone comes up through the mound                            */
+
+.ceremony .cy-cam, .ceremony .cy-mist, .ceremony .cy-pit, .ceremony .cy-heap,
+.ceremony .cy-mound, .ceremony .cy-card, .ceremony .cy-glow, .ceremony .cy-ghost,
+.ceremony .cy-stone, .ceremony .cy-turn, .ceremony .cy-digger, .ceremony .cy-torso,
+.ceremony .cy-arm, .ceremony .cy-spade, .ceremony .cy-legf, .ceremony .cy-legb,
+.ceremony .cy-fly, .ceremony .cy-fly-y { transform-origin: 0 0 }
+
+/* A slow push toward the grave. Small enough that nobody names it. */
+@keyframes cy-cam {
+  0%   { transform: translate(0,0) scale(1) }
+  100% { transform: translate(28px,-8px) scale(1.08) }
 }
+@keyframes cy-mist { 50% { transform: translateX(26px) } }
+
+/* THE DIGGER.
+   Hips lean into the stroke and snap back on the heave. The arm carries the
+   spade, the spade tips on the release. Angles are in his own frame, facing
+   right; the scaleX(-1) in cy-turn mirrors the whole stroke for the first
+   half, so one set of keyframes plays both directions. */
+/* Joint angles, not eyeballed. The blade has to land in the grave, and with
+   three nested rotations you cannot see that from the numbers — leaning in
+   rotates the arm backwards, so an earlier version had him driving the spade
+   into the ground between his own feet. These were solved against the drawn
+   geometry for a target blade position at each pose:
+
+     rest   ( 30, -6)   spade standing on the turf beside him
+     plant  ( 32,  0)   blade at the near lip
+     drive  ( 31,  2)   weight on it
+     lift   ( 43,-40)   coming up loaded
+     heave  (  5,-60)   over the shoulder — the earth leaves here
+     follow ( 21,-63)   the empty blade carries through                     */
+@keyframes cy-torso {
+  0%, 5%    { transform: rotate(3deg) }
+  7%        { transform: rotate(26deg) }
+  9%        { transform: rotate(35deg) }
+  10.4%     { transform: rotate(10deg) }
+  11.5%     { transform: rotate(-26deg) }
+  12.5%     { transform: rotate(-8deg) }
+  15%       { transform: rotate(3deg) }
+  18%       { transform: rotate(26deg) }
+  20%       { transform: rotate(35deg) }
+  21.4%     { transform: rotate(10deg) }
+  22.5%     { transform: rotate(-26deg) }
+  23.5%     { transform: rotate(-8deg) }
+  26%       { transform: rotate(3deg) }
+  29%       { transform: rotate(26deg) }
+  31%       { transform: rotate(35deg) }
+  32.4%     { transform: rotate(10deg) }
+  33.5%     { transform: rotate(-26deg) }
+  34.5%     { transform: rotate(-8deg) }
+  38%, 55%  { transform: rotate(3deg) }
+  56%       { transform: rotate(17deg) }
+  57.4%     { transform: rotate(10deg) }
+  58.5%     { transform: rotate(-26deg) }
+  59.5%     { transform: rotate(-8deg) }
+  65%       { transform: rotate(17deg) }
+  66.4%     { transform: rotate(10deg) }
+  67.5%     { transform: rotate(-26deg) }
+  68.5%     { transform: rotate(-8deg) }
+  74%       { transform: rotate(17deg) }
+  75.4%     { transform: rotate(10deg) }
+  76.5%     { transform: rotate(-26deg) }
+  77.5%     { transform: rotate(-8deg) }
+  81%, 100% { transform: rotate(2deg) }
+}
+@keyframes cy-arm {
+  0%, 5%    { transform: rotate(2deg) }
+  7%        { transform: rotate(-10deg) }
+  9%        { transform: rotate(-14deg) }
+  10.4%     { transform: rotate(-26deg) }
+  11.5%     { transform: rotate(-32deg) }
+  12.5%     { transform: rotate(-40deg) }
+  15%       { transform: rotate(2deg) }
+  18%       { transform: rotate(-10deg) }
+  20%       { transform: rotate(-14deg) }
+  21.4%     { transform: rotate(-26deg) }
+  22.5%     { transform: rotate(-32deg) }
+  23.5%     { transform: rotate(-40deg) }
+  26%       { transform: rotate(2deg) }
+  29%       { transform: rotate(-10deg) }
+  31%       { transform: rotate(-14deg) }
+  32.4%     { transform: rotate(-26deg) }
+  33.5%     { transform: rotate(-32deg) }
+  34.5%     { transform: rotate(-40deg) }
+  38%, 55%  { transform: rotate(2deg) }
+  56%       { transform: rotate(-4deg) }
+  57.4%     { transform: rotate(-26deg) }
+  58.5%     { transform: rotate(-32deg) }
+  59.5%     { transform: rotate(-40deg) }
+  65%       { transform: rotate(-4deg) }
+  66.4%     { transform: rotate(-26deg) }
+  67.5%     { transform: rotate(-32deg) }
+  68.5%     { transform: rotate(-40deg) }
+  74%       { transform: rotate(-4deg) }
+  75.4%     { transform: rotate(-26deg) }
+  76.5%     { transform: rotate(-32deg) }
+  77.5%     { transform: rotate(-40deg) }
+  81%, 100% { transform: rotate(0deg) }
+}
+@keyframes cy-spade {
+  0%, 5%    { transform: rotate(2deg) }
+  7%        { transform: rotate(-8deg) }
+  9%        { transform: rotate(-10deg) }
+  10.4%     { transform: rotate(-70deg) }
+  11.5%     { transform: rotate(-130deg) }
+  12.5%     { transform: rotate(-105deg) }
+  15%       { transform: rotate(2deg) }
+  18%       { transform: rotate(-8deg) }
+  20%       { transform: rotate(-10deg) }
+  21.4%     { transform: rotate(-70deg) }
+  22.5%     { transform: rotate(-130deg) }
+  23.5%     { transform: rotate(-105deg) }
+  26%       { transform: rotate(2deg) }
+  29%       { transform: rotate(-8deg) }
+  31%       { transform: rotate(-10deg) }
+  32.4%     { transform: rotate(-70deg) }
+  33.5%     { transform: rotate(-130deg) }
+  34.5%     { transform: rotate(-105deg) }
+  38%, 55%  { transform: rotate(2deg) }
+  56%       { transform: rotate(-10deg) }
+  57.4%     { transform: rotate(-70deg) }
+  58.5%     { transform: rotate(-130deg) }
+  59.5%     { transform: rotate(-105deg) }
+  65%       { transform: rotate(-10deg) }
+  66.4%     { transform: rotate(-70deg) }
+  67.5%     { transform: rotate(-130deg) }
+  68.5%     { transform: rotate(-105deg) }
+  74%       { transform: rotate(-10deg) }
+  75.4%     { transform: rotate(-70deg) }
+  76.5%     { transform: rotate(-130deg) }
+  77.5%     { transform: rotate(-105deg) }
+  81%, 100% { transform: rotate(0deg) }
+}
+/* Weight forward on the plant, back on the heave. */
+@keyframes cy-legf {
+  0%, 5%    { transform: rotate(5deg) }
+  9%        { transform: rotate(15deg) }
+  11.5%     { transform: rotate(1deg) }
+  20%       { transform: rotate(15deg) }
+  22.5%     { transform: rotate(1deg) }
+  31%       { transform: rotate(15deg) }
+  33.5%, 54%{ transform: rotate(5deg) }
+  56%       { transform: rotate(11deg) }
+  58.5%     { transform: rotate(2deg) }
+  67.5%     { transform: rotate(2deg) }
+  76.5%     { transform: rotate(2deg) }
+  81%, 100% { transform: rotate(5deg) }
+}
+@keyframes cy-legb {
+  0%, 5%    { transform: rotate(-6deg) }
+  9%        { transform: rotate(-13deg) }
+  11.5%     { transform: rotate(-2deg) }
+  20%       { transform: rotate(-13deg) }
+  22.5%     { transform: rotate(-2deg) }
+  31%       { transform: rotate(-13deg) }
+  33.5%, 54%{ transform: rotate(-6deg) }
+  58.5%     { transform: rotate(-3deg) }
+  81%, 100% { transform: rotate(-6deg) }
+}
+/* He turns on the spot rather than walking, because a 46-unit-tall figure
+   sliding sideways looks like a sticker being dragged. Passing through
+   scaleX(0) reads as a pivot. */
+@keyframes cy-turn {
+  0%, 54%   { transform: scaleX(-1) }
+  57%, 100% { transform: scaleX(1) }
+}
+/* A short shove backwards off the grave as it opens, and a step in to fill. */
+@keyframes cy-digger {
+  0%, 36%   { transform: translateX(0) }
+  42%, 54%  { transform: translateX(9px) }
+  58%, 100% { transform: translateX(0) }
+}
+
+/* THE GRAVE. Opens a step per stroke, holds while the feature goes in,
+   then closes as the earth comes back. */
 @keyframes cy-pit {
-  0%,6%   { rx: 0; ry: 0 }
-  20%     { rx: 30px; ry: 8px }
-  35%     { rx: 42px; ry: 14px }
-  50%     { rx: 52px; ry: 19px }
-  72%     { rx: 52px; ry: 19px }
-  86%,100%{ rx: 24px; ry: 0 }
+  0%, 7%    { transform: scale(0.001,0.001) }
+  15.5%     { transform: scale(0.42,0.34) }
+  26.5%     { transform: scale(0.74,0.68) }
+  37.5%, 58%{ transform: scale(1,1) }
+  61%       { transform: scale(0.82,0.8) }
+  70%       { transform: scale(0.5,0.5) }
+  79%,100%  { transform: scale(0.001,0.001) }
+}
+@keyframes cy-heap {
+  0%, 12%   { transform: scale(0.001,0.001) }
+  16%       { transform: scale(0.44,0.4) }
+  27%       { transform: scale(0.76,0.72) }
+  38%, 60%  { transform: scale(1,1) }
+  63%       { transform: scale(0.78,0.76) }
+  72%       { transform: scale(0.44,0.46) }
+  80%,100%  { transform: scale(0.001,0.001) }
 }
 @keyframes cy-mound {
-  0%,14%  { d: path("M96 197 Q135 197 174 197 Z") }
-  34%     { d: path("M96 197 Q135 187 174 197 Z") }
-  50%     { d: path("M96 197 Q135 180 174 197 Z") }
-  72%     { d: path("M96 197 Q135 174 174 197 Z") }
-  86%,100%{ d: path("M96 197 Q135 197 174 197 Z") }
+  0%, 60%   { transform: scale(0.001,0.001) }
+  63%       { transform: scale(0.5,0.36) }
+  72%       { transform: scale(0.8,0.74) }
+  81%,100%  { transform: scale(1,1) }
 }
-@keyframes cy-card {
-  0%,55%  { opacity: 0; transform: none }
-  58%     { opacity: 1 }
-  70%     { opacity: .06; transform: translateY(46px) scale(.84) }
-  100%    { opacity: 0; transform: translateY(46px) scale(.84) }
-}
-@keyframes cy-stone {
-  0%,86%  { transform: translateY(46px) rotate(-4deg); opacity: 0 }
-  88%     { opacity: 1 }
-  96%     { transform: translateY(-4px) rotate(1deg) }
-  100%    { transform: none; opacity: 1 }
-}
-.ceremony .cy-cam    { animation: cy-cam 7.2s cubic-bezier(.2,.6,.2,1) forwards }
-.ceremony .cy-shovel { animation: cy-dig 7.2s linear forwards }
-.ceremony .cy-pit,
-.ceremony .cy-rim    { animation: cy-pit 7.2s linear forwards }
-.ceremony .cy-mound  { animation: cy-mound 7.2s linear forwards }
-.ceremony .cy-card   { animation: cy-card 7.2s ease-in forwards }
-.ceremony .cy-stone  { animation: cy-stone 7.2s cubic-bezier(.2,1.25,.35,1) forwards }
 
-@media (prefers-reduced-motion: reduce) {
-  .ceremony .cy-cam, .ceremony .cy-shovel, .ceremony .cy-pit, .ceremony .cy-rim,
-  .ceremony .cy-mound, .ceremony .cy-card { animation: none }
-  .ceremony .cy-shovel, .ceremony .cy-card { opacity: 0 }
-  .ceremony .cy-stone { animation: none; opacity: 1 }
+/* WHAT IS BEING BURIED. It is still lit on the way down. The light goes out
+   at the bottom, and that is the beat the whole thing is built around. */
+@keyframes cy-card {
+  0%, 38%   { opacity: 0; transform: translateY(-42px) scale(0.9) }
+  41%       { opacity: 1; transform: translateY(-30px) scale(0.94) }
+  46%       { opacity: 1; transform: translateY(6px) scale(0.99) }
+  50%       { opacity: 1; transform: translateY(30px) scale(0.86) }
+  53%       { opacity: 0.16; transform: translateY(38px) scale(0.8) }
+  56%,100%  { opacity: 0; transform: translateY(38px) scale(0.8) }
 }
+@keyframes cy-glow {
+  0%, 46%   { opacity: 0.1 }
+  49%       { opacity: 0.2 }
+  50.5%     { opacity: 0.03 }
+  51.5%     { opacity: 0.14 }
+  53%,100%  { opacity: 0 }
+}
+@keyframes cy-ghost {
+  0%, 52%   { opacity: 0; transform: translate(0,-6px) scale(0.5) }
+  56%       { opacity: 0.75; transform: translate(-3px,-24px) scale(0.9) }
+  60%       { opacity: 0.5; transform: translate(6px,-46px) scale(1) }
+  66%       { opacity: 0; transform: translate(-2px,-72px) scale(1.1) }
+  100%      { opacity: 0; transform: translate(-2px,-72px) scale(1.1) }
+}
+
+/* EARTH IN FLIGHT. X is linear and Y is a parabola, nested, because that is
+   an arc without needing offset-path. Each clump runs its own short animation
+   off a delay, so one keyframe pair serves all twenty-one of them. */
+@keyframes cy-fly {
+  0%        { opacity: 0; transform: translateX(0) }
+  10%       { opacity: 1 }
+  82%       { opacity: 1 }
+  100%      { opacity: 0; transform: translateX(var(--dx)) }
+}
+@keyframes cy-fly-y {
+  0%        { transform: translateY(0) rotate(0deg) }
+  42%       { transform: translateY(var(--peak)) rotate(calc(var(--spin) * 0.42)) }
+  100%      { transform: translateY(var(--dy)) rotate(var(--spin)) }
+}
+
+/* THE STONE. Up through the mound, a small overshoot, then still. */
+@keyframes cy-stone {
+  0%, 84%   { transform: translateY(44px) rotate(-3deg); opacity: 0 }
+  86%       { opacity: 1 }
+  91%       { transform: translateY(-4px) rotate(1.2deg) }
+  94%,100%  { transform: translateY(0) rotate(0deg); opacity: 1 }
+}
+
+.ceremony .cy-cam    { animation: cy-cam 9s cubic-bezier(.25,.6,.3,1) forwards }
+.ceremony .cy-mist   { animation: cy-mist 9s ease-in-out forwards }
+.ceremony .cy-torso  { animation: cy-torso 9s cubic-bezier(.4,0,.35,1) forwards }
+.ceremony .cy-arm    { animation: cy-arm 9s cubic-bezier(.45,0,.3,1) forwards }
+.ceremony .cy-spade  { animation: cy-spade 9s cubic-bezier(.45,0,.3,1) forwards }
+.ceremony .cy-legf   { animation: cy-legf 9s ease-in-out forwards }
+.ceremony .cy-legb   { animation: cy-legb 9s ease-in-out forwards }
+.ceremony .cy-turn   { animation: cy-turn 9s ease-in-out forwards }
+.ceremony .cy-digger { animation: cy-digger 9s ease-in-out forwards }
+.ceremony .cy-pit    { animation: cy-pit 9s cubic-bezier(.3,.8,.4,1) forwards }
+.ceremony .cy-heap   { animation: cy-heap 9s cubic-bezier(.3,.8,.4,1) forwards }
+.ceremony .cy-mound  { animation: cy-mound 9s cubic-bezier(.3,.8,.4,1) forwards }
+.ceremony .cy-card   { animation: cy-card 9s cubic-bezier(.5,0,.7,1) forwards }
+.ceremony .cy-glow   { animation: cy-glow 9s linear forwards }
+.ceremony .cy-ghost  { animation: cy-ghost 9s ease-out forwards }
+.ceremony .cy-stone  { animation: cy-stone 9s cubic-bezier(.2,1.3,.35,1) forwards }
+.ceremony .cy-fly    { animation: cy-fly .85s linear both }
+.ceremony .cy-fly-y  { animation: cy-fly-y .85s cubic-bezier(.3,.2,.6,1) both }
+
+/* Nothing half-runs. The scene resolves to its last frame: filled grave,
+   stone up, digger standing. */
+@media (prefers-reduced-motion: reduce) {
+  .ceremony [class^="cy-"], .ceremony [class*=" cy-"] { animation: none !important }
+  .ceremony .cy-pit, .ceremony .cy-heap, .ceremony .cy-card,
+  .ceremony .cy-glow, .ceremony .cy-ghost, .ceremony .cy-fly { opacity: 0 }
+  .ceremony .cy-stone, .ceremony .cy-mound { opacity: 1 }
+}
+
 
 /* The horizon. Slow enough that you never catch it moving — which is the
    point. Anything faster reads as a loading state. */
