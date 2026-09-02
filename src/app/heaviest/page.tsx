@@ -28,6 +28,12 @@ export default async function Heaviest() {
           Ranked by hours, not money — so a solo founder&rsquo;s six months of evenings
           can outweigh a funded team&rsquo;s sprint. Which is the honest comparison.
         </p>
+        <p className="prose-tight max-w-prose text-sm text-muted">
+          People who register their own death say how hard they worked. The
+          entries gathered from public threads rarely do, so those are counted at
+          the lowest band — evenings and weekends — which under-states them on
+          purpose. Every one links to what its author actually wrote.
+        </p>
       </header>
 
       {sum.graves > 0 && (

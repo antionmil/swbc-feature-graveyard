@@ -70,8 +70,9 @@ export function Entry({ e, i = 0 }: { e: Grave; i?: number }) {
               rel="noopener nofollow"
               className="underline underline-offset-4 hover:text-accent"
             >
-              {e.source_site ?? "source"}
-              {e.source_date ? `, ${e.source_date.slice(0, 4)}` : ""}
+              {e.source_author ? `${e.source_author} on ` : ""}
+              {e.source_site ?? "the source"}
+              {e.source_date ? `, ${e.source_date.slice(0, 4)}` : ""} ↗
             </a>
           </>
         )}
