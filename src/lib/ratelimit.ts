@@ -10,7 +10,15 @@ function positive(raw: string | undefined, fallback: number) {
   return Number.isFinite(n) && n > 0 ? n : fallback;
 }
 
-const IP_LIMIT = positive(process.env.IP_DAILY_LIMIT, 3);
+/* No per-person daily cap on burials. There was one — three a day — and it
+   turned a first-time visitor away with "you have already sent a few today",
+   which is the worst possible first impression and was wrong besides. Writing
+   a burial costs a row, not money, and nothing reaches the wall unread, so the
+   thing a cap was protecting against is already handled by moderation.
+
+   What stays is the global daily ceiling, which is not a limit on a person but
+   a backstop against a runaway script turning into a bill, and the honeypot,
+   which no human ever touches. */
 const CEILING = positive(process.env.DAILY_GENERATION_CEILING, 2000);
 
 /* Counters are day-scoped, so yesterday's entries are dead weight. Without
@@ -52,26 +60,16 @@ async function bump(bucket: string): Promise<number> {
   return rows[0]?.n ?? 1;
 }
 
-export type Gate =
-  | { ok: true }
-  | { ok: false; reason: "ip"; limit: number }
-  | { ok: false; reason: "ceiling" };
+export type Gate = { ok: true } | { ok: false; reason: "ceiling" };
 
 /**
- * Call BEFORE any generation. Two layers:
- *  - per IP per day, so one person cannot drain the budget
- *  - a global daily ceiling, so a front-page day cannot become a surprise bill
- *
- * Past the ceiling the site serves cache only. Build that state now - you will
- * not have time to design it on a viral day.
+ * One layer: a global daily ceiling, so a front-page day cannot become a
+ * surprise bill. Past it the site serves cache only. Build that state now —
+ * you will not have time to design it on a viral day.
  */
-export async function checkGate(req: Request): Promise<Gate> {
-  const day = today();
-  const total = await bump(`gen:${day}`);
+export async function checkGate(_req: Request): Promise<Gate> {
+  const total = await bump(`gen:${today()}`);
   if (total > CEILING) return { ok: false, reason: "ceiling" };
-  const h = await ipHash(req);
-  const mine = await bump(`gen:${day}:${h}`);
-  if (mine > IP_LIMIT) return { ok: false, reason: "ip", limit: IP_LIMIT };
   return { ok: true };
 }
 

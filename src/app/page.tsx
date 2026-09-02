@@ -6,13 +6,16 @@ import { LiveCount } from "@/components/LiveCount";
 import { Wall } from "@/components/Wall";
 import { YardPlay } from "@/components/YardPlay";
 import { Yard } from "@/components/Yard";
-import { heaviest, totals, wall } from "@/lib/entries";
+import { heaviest, stonesFor, totals, wall } from "@/lib/entries";
 import { bigHours, money, registry } from "@/lib/toll";
 
 export const revalidate = 60;
 
 export default async function Home() {
   const [rows, top, sum] = await Promise.all([wall(), heaviest(5), totals()]);
+  /* Server-rendered counts so the number is right in the HTML rather than
+     popping in — the client fetch after it only adds "is this one mine". */
+  const stones = Object.fromEntries(await stonesFor(rows.map((r) => r.id)));
   const all = bigHours(sum.hours);
 
   return (
@@ -110,7 +113,7 @@ export default async function Home() {
             Not a ranking — just the pile, so it is a bit less lonely.
           </p>
         </header>
-        <Wall rows={rows} />
+        <Wall rows={rows} stones={stones} />
       </section>
 
       <Yard className="-mx-5 mt-16 opacity-55 sm:-mx-6" zombies />

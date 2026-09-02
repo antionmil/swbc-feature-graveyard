@@ -24,12 +24,7 @@ export async function POST(req: NextRequest) {
   const gate = await checkGate(req);
   if (!gate.ok) {
     return NextResponse.json(
-      {
-        error:
-          gate.reason === "ip"
-            ? "You have already sent a few today. Come back tomorrow."
-            : "The wall has taken all it can today. Come back tomorrow.",
-      },
+      { error: "The wall has taken all it can today. Come back tomorrow." },
       { status: 429 },
     );
   }

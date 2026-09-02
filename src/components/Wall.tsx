@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { visitorId } from "@/lib/pulseClient";
 import { Entry } from "@/components/Entry";
 import type { Grave } from "@/lib/entries";
 
@@ -10,7 +11,7 @@ import type { Grave } from "@/lib/entries";
 const PAGE = 5;
 const MORE = 10;
 
-export function Wall({ rows }: { rows: Grave[] }) {
+export function Wall({ rows, stones }: { rows: Grave[]; stones: Record<number, number> }) {
   const [picked, setPicked] = useState<string | null>(null);
   const [q, setQ] = useState("");
 
@@ -44,6 +45,29 @@ export function Wall({ rows }: { rows: Grave[] }) {
 
   const shown = matching.slice(0, take);
   const left = matching.length - shown.length;
+
+  /* One request for the whole visible page rather than one per card. Without
+     this a wall of cards is a serverless invocation and a Neon query each, and
+     Neon scales to zero — so a cold visitor would pay for all of them at once. */
+  const [live, setLive] = useState<Record<number, { total: number; mine: boolean }>>({});
+  const ids = shown.map((r) => r.id).join(",");
+  useEffect(() => {
+    if (!ids) return;
+    let dead = false;
+    fetch(`/api/stones?graves=${ids}&sid=${encodeURIComponent(visitorId())}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (dead || !d?.totals) return;
+        const mine: number[] = Array.isArray(d.mine) ? d.mine : [];
+        const next: Record<number, { total: number; mine: boolean }> = {};
+        for (const [k, v] of Object.entries(d.totals)) {
+          next[Number(k)] = { total: Number(v) || 0, mine: mine.includes(Number(k)) };
+        }
+        setLive((prev) => ({ ...prev, ...next }));
+      })
+      .catch(() => {});
+    return () => { dead = true; };
+  }, [ids]);
 
   if (rows.length === 0) {
     return (
@@ -105,7 +129,9 @@ export function Wall({ rows }: { rows: Grave[] }) {
         {shown.length === 0 ? (
           <p className="text-body">Nothing matches that. Try fewer words.</p>
         ) : (
-          shown.map((e, i) => <Entry key={e.id} e={e} i={i} />)
+          shown.map((e, i) => (
+            <Entry key={e.id} e={e} i={i} stones={stones[e.id] ?? 0} hydrated={live[e.id]} />
+          ))
         )}
       </section>
 

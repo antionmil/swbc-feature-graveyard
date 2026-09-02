@@ -76,15 +76,22 @@ export default async function Heaviest() {
               <li key={r.id}>
                 <Link
                   href={`/g/${r.slug}`}
-                  className="flex items-baseline gap-4 border-b border-rule py-4 transition-colors hover:border-accent"
+                  className="flex items-start gap-4 border-b border-rule py-4 transition-colors hover:border-accent"
                 >
                   <span className="w-6 shrink-0 text-sm text-faint tabular-nums">{i + 1}</span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-base text-ink sm:text-lg">{r.feature}</span>
-                    <span className="mt-0.5 block text-xs text-muted">
+                    {/* A line of the story. The right-hand figure is three
+                        lines tall and the left was two, which left a hole
+                        beside every row — and a ranked list of titles alone
+                        tells you nothing about what any of them were. */}
+                    <span className="mt-1 line-clamp-2 block text-sm leading-snug text-body">
+                      {r.summary}
+                    </span>
+                    <span className="mt-1.5 block text-xs text-muted">
                       {r.outcome}
                       {r.people && r.weeks ? ` · ${r.people} × ${r.weeks} weeks` : ""}
-                      {r.author ? ` · ${r.author}` : ""}
+                      {r.author ?? r.source_author ? ` · ${r.author ?? r.source_author}` : ""}
                       {` · ${registry(r.id)}`}
                     </span>
                   </span>

@@ -17,7 +17,19 @@ import { visitorId } from "@/lib/pulseClient";
  */
 const HOLD_MS = 520;
 
-export function Stones({ graveId, initial }: { graveId: number; initial: number }) {
+export function Stones({
+  graveId,
+  initial,
+  hydrated,
+  compact = false,
+}: {
+  graveId: number;
+  initial: number;
+  /** Supplied when a parent has already fetched the whole page's counts, so
+   *  a wall of cards costs one request instead of one per card. */
+  hydrated?: { total: number; mine: boolean };
+  compact?: boolean;
+}) {
   const [total, setTotal] = useState(initial);
   const [mine, setMine] = useState(false);
   const [fill, setFill] = useState(0);
@@ -26,6 +38,11 @@ export function Stones({ graveId, initial }: { graveId: number; initial: number 
   const start = useRef<number | null>(null);
 
   useEffect(() => {
+    if (hydrated) {
+      setTotal(hydrated.total);
+      setMine(hydrated.mine);
+      return;
+    }
     fetch(`/api/stones?grave=${graveId}&sid=${encodeURIComponent(visitorId())}`)
       .then((r) => r.json())
       .then((d) => {
@@ -33,7 +50,7 @@ export function Stones({ graveId, initial }: { graveId: number; initial: number 
         if (typeof d.mine === "boolean") setMine(d.mine);
       })
       .catch(() => {});
-  }, [graveId]);
+  }, [graveId, hydrated?.total, hydrated?.mine]);
 
   async function toggle() {
     const next = !mine;
@@ -85,7 +102,7 @@ export function Stones({ graveId, initial }: { graveId: number; initial: number 
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+    <div className={`flex flex-wrap items-center ${compact ? "gap-x-2.5 gap-y-1" : "gap-x-4 gap-y-2"}`}>
       <button
         onPointerDown={down}
         onPointerUp={up}
@@ -93,20 +110,24 @@ export function Stones({ graveId, initial }: { graveId: number; initial: number 
         onPointerCancel={up}
         aria-pressed={mine}
         aria-label={mine ? "Lift your stone back off" : "Hold to leave a stone"}
-        className={`relative touch-none overflow-hidden rounded-full border px-4 py-2 text-sm transition-colors select-none ${
-          mine ? "border-accent text-accent" : "border-edge text-muted hover:text-body"
-        }`}
+        className={`relative touch-none overflow-hidden rounded-full border transition-colors select-none ${
+          compact ? "px-3 py-1 text-xs" : "px-4 py-2 text-sm"
+        } ${mine ? "border-accent text-accent" : "border-edge text-muted hover:text-body"}`}
       >
         <span
           aria-hidden
           className="absolute inset-y-0 left-0 bg-accent/20"
           style={{ width: `${fill * 100}%` }}
         />
-        <span className="relative">{mine ? "your stone is here" : "hold to leave a stone"}</span>
+        <span className="relative">
+          {mine
+            ? compact ? "your stone" : "your stone is here"
+            : compact ? "hold to leave a stone" : "hold to leave a stone"}
+        </span>
       </button>
 
       <div className="flex items-end gap-1" aria-hidden>
-        {Array.from({ length: Math.min(6, total) }, (_, i) => (
+        {Array.from({ length: Math.min(compact ? 4 : 6, total) }, (_, i) => (
           <span
             key={i}
             className={i === 0 && landed ? "stone-drop" : ""}
@@ -120,7 +141,7 @@ export function Stones({ graveId, initial }: { graveId: number; initial: number 
         ))}
       </div>
 
-      <span className="text-sm text-muted tabular-nums">
+      <span className={`${compact ? "text-xs" : "text-sm"} text-muted tabular-nums`}>
         {total} {total === 1 ? "stone" : "stones"}
       </span>
     </div>

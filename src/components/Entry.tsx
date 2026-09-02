@@ -1,5 +1,17 @@
+import { Stones } from "@/components/Stones";
 import { authorLink } from "@/lib/outcomes";
 import type { Grave } from "@/lib/entries";
+
+/* An absolute date, not "3 days ago". The wall is a statically cached page, so
+   a relative date is computed at build time and then quietly lies for as long
+   as the cache lives. */
+const buried = (d: Date | string | null) => {
+  if (!d) return null;
+  const t = new Date(d);
+  return Number.isNaN(t.getTime())
+    ? null
+    : t.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+};
 
 /**
  * One confession.
@@ -8,7 +20,18 @@ import type { Grave } from "@/lib/entries";
  * whole design. Leading with the duration would make this a cost counter, and
  * eleven of the thirteen seeded entries have no duration at all.
  */
-export function Entry({ e, i = 0 }: { e: Grave; i?: number }) {
+export function Entry({
+  e,
+  i = 0,
+  stones = 0,
+  hydrated,
+}: {
+  e: Grave;
+  i?: number;
+  stones?: number;
+  hydrated?: { total: number; mine: boolean };
+}) {
+  const when = buried(e.created_at);
   return (
     <article
       className="rise border-l-2 border-rule pl-4 sm:pl-5"
@@ -45,6 +68,15 @@ export function Entry({ e, i = 0 }: { e: Grave; i?: number }) {
 
       <p className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
         <span className="text-faint">{e.outcome}</span>
+        {/* When it was buried here — which is what the wall is ordered by, so
+            without it the order looks arbitrary. Separate from the year of the
+            original story, which is on the source link. */}
+        {when && (
+          <>
+            <span aria-hidden>·</span>
+            <span className="text-faint">buried {when}</span>
+          </>
+        )}
         {/* Only rendered when it exists. A dash or a "—" in this slot invites
             somebody to fill it in with a guess. */}
         {e.time_spent && (
@@ -84,6 +116,13 @@ export function Entry({ e, i = 0 }: { e: Grave; i?: number }) {
           </>
         )}
       </p>
+
+      {/* The stone lives here too, not only on the plot. Leaving one is the
+          cheapest thing anybody will ever do on this site, and making them
+          open the entry first cost most of them. */}
+      <div className="mt-3">
+        <Stones graveId={e.id} initial={stones} hydrated={hydrated} compact />
+      </div>
     </article>
   );
 }
